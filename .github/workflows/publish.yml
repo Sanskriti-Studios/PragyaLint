@@ -49,7 +49,8 @@ jobs:
         run: python -m build
       - name: Capture version
         id: version
-        run: echo "version=$(python -c 'import tomllib;print(tomllib.load(open(\"pyproject.toml\",\"rb\"))[\"project\"][\"version\"])')" >> "$GITHUB_OUTPUT"
+        run: |
+          python -c 'import tomllib; print("version=" + tomllib.load(open("pyproject.toml","rb"))["project"]["version"])' >> "$GITHUB_OUTPUT"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
