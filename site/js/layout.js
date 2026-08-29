@@ -24,7 +24,7 @@
     { href: "docs/", fa: "fa-solid fa-book", label: "Docs", title: "Documentation" },
     { href: "https://github.com/Sanskriti-Studios/PragyaLint", fa: "fa-brands fa-github", label: "GitHub", title: "GitHub repository", external: true },
     { href: "https://pypi.org/project/pragyalint/", fa: "fa-brands fa-python", label: "PyPI", title: "PyPI package", external: true },
-    { href: "https://marketplace.visualstudio.com/items?itemName=IndianCoder3.pragyalint", fa: "fa-solid fa-code", label: "Extension", title: "PragyaLint for Visual Studio Code", external: true },
+    { href: "https://marketplace.visualstudio.com/items?itemName=IndianCoder3.sks-pragyalint", fa: "fa-solid fa-code", label: "Extension", title: "PragyaLint for Visual Studio Code", external: true },
   ];
 
   function injectNav() {
@@ -67,7 +67,7 @@
       '<a href="docs/" aria-label="Docs" title="Docs"><i class="fa-solid fa-book"></i></a>' +
       '<a href="https://github.com/Sanskriti-Studios/PragyaLint" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><i class="fa-brands fa-github"></i></a>' +
       '<a href="https://pypi.org/project/pragyalint/" target="_blank" rel="noopener" aria-label="PyPI" title="PyPI"><i class="fa-brands fa-python"></i></a>' +
-      '<a href="https://marketplace.visualstudio.com/items?itemName=IndianCoder3.pragyalint" target="_blank" rel="noopener" aria-label="PragyaLint for Visual Studio Code" title="PragyaLint for Visual Studio Code"><i class="fa-solid fa-code"></i></a>' +
+      '<a href="https://marketplace.visualstudio.com/items?itemName=IndianCoder3.sks-pragyalint" target="_blank" rel="noopener" aria-label="PragyaLint for Visual Studio Code" title="PragyaLint for Visual Studio Code"><i class="fa-solid fa-code"></i></a>' +
       "</span>" +
       "</div></footer>";
   }
