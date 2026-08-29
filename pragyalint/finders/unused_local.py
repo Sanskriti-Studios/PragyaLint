@@ -3,10 +3,17 @@
 from __future__ import annotations
 
 import ast
-from typing import Dict, List
+from typing import Dict, List, Set
 
 from pragyalint.models import Confidence, Finding, ModuleRecord
 from pragyalint.finders import Finder
+from pragyalint.dynamic import (
+    collect_dispatch_table_names,
+    collect_getattr_literal_names,
+    has_dynamic_dispatch,
+    has_keep_pragma,
+    read_source_lines,
+)
 
 _CONTAINER_TYPES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)
 
@@ -16,6 +23,11 @@ class UnusedLocalFinder(Finder):
     referenced by no reachable module (including their own module).
 
     Names re-exported through ``__all__`` or imported by other modules are kept.
+    Names only ever looked up dynamically (dispatch tables, ``getattr``,
+    ``globals()``, ``exec``/``eval``, or marked with a ``# pragyalint: keep``
+    comment) are also kept, or reported at LOW confidence when the dynamic
+    pattern can't be resolved statically -- static analysis can't prove those
+    are dead, so they should never be auto-deleted.
     """
 
     rule = "unused_local"
@@ -28,6 +40,16 @@ class UnusedLocalFinder(Finder):
 
         tree_map: Dict[str, ast.Module] = self.trees
 
+        # Names referenced anywhere as the *value* of a dict/list/tuple/set
+        # literal -- the shape of a command-dispatch table -- are treated as
+        # used project-wide, since they're never called by a bare name.
+        dispatch_names: Set[str] = set()
+        # Whether *any* module in the project uses exec/eval/getattr/globals.
+        # This has to be project-wide, not per-file: a reflective call in
+        # app.py can just as easily name a function defined in runtime.py --
+        # the risk isn't confined to the file containing the getattr() call.
+        project_is_dynamic = False
+
         for record in records:
             tree = tree_map.get(record.path)
             if tree is None:
@@ -35,6 +57,10 @@ class UnusedLocalFinder(Finder):
             for node in ast.walk(tree):
                 if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
                     read_counts[node.id] = read_counts.get(node.id, 0) + 1
+            dispatch_names |= collect_dispatch_table_names(tree)
+            dispatch_names |= collect_getattr_literal_names(tree)
+            if has_dynamic_dispatch(tree):
+                project_is_dynamic = True
 
         # Names referenced by another module's import are "used" globally.
         for record in records:
@@ -49,6 +75,7 @@ class UnusedLocalFinder(Finder):
             if tree is None:
                 continue
             member_used = self.graph.used_members_for(record.module_name) if self.graph else set()
+            source_lines = read_source_lines(record.path)
             for node in tree.body:
                 if isinstance(node, _CONTAINER_TYPES):
                     if node.name.startswith("_"):
@@ -57,14 +84,26 @@ class UnusedLocalFinder(Finder):
                         continue
                     if node.name in member_used:
                         continue
+                    if node.name in dispatch_names:
+                        continue
+                    if has_keep_pragma(source_lines, getattr(node, "lineno", None)):
+                        continue
+                    confidence = Confidence.LOW if project_is_dynamic else Confidence.MEDIUM
+                    message = (
+                        f"{type(node).__name__} {node.name!r} is defined "
+                        f"but never used"
+                    )
+                    if project_is_dynamic:
+                        message += (
+                            " (project uses exec/eval/getattr/globals "
+                            "somewhere -- this may be a dynamic-dispatch "
+                            "false positive; review before deleting)"
+                        )
                     self.emit(
                         Finding(
                             rule=self.rule,
-                            confidence=Confidence.MEDIUM,
-                            message=(
-                                f"{type(node).__name__} {node.name!r} is defined "
-                                f"but never used"
-                            ),
+                            confidence=confidence,
+                            message=message,
                             file=record.path,
                             line=getattr(node, "lineno", None),
                             column=getattr(node, "col_offset", None),
@@ -79,6 +118,8 @@ class UnusedLocalFinder(Finder):
                         # module-level constants are often consumed externally;
                         # keep a low-confidence warning only for obvious dead sets
                         if read_counts.get(name, 0) > 0:
+                            continue
+                        if name in dispatch_names:
                             continue
                         if isinstance(node, ast.Assign) and _is_constant(node.value):
                             self.emit(

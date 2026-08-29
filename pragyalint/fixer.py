@@ -188,6 +188,14 @@ def _fix_unused_exports(
 
     import ast
 
+    # Dynamic dispatch (getattr/exec/eval/globals) anywhere in the project
+    # means a reflective call in file A can reach a definition in file B, so
+    # this has to be checked project-wide, not just against the file being
+    # edited.
+    project_is_dynamic = any(
+        f.confidence == Confidence.LOW for f in findings
+    )
+
     for path, fs in grouped.items():
         if not _confidence_at_or_above(min(f.confidence for f in fs), threshold):
             continue
@@ -207,6 +215,17 @@ def _fix_unused_exports(
             target_names = target_names - all_names
             if not target_names:
                 continue
+        # Definition deletion is unsafe anywhere in the project if any module
+        # uses exec/eval/getattr/globals(): a name can be genuinely alive via
+        # dynamic dispatch reaching across files, while looking dead to
+        # static analysis. Refuse to delete unless --force is passed.
+        if not force and project_is_dynamic:
+            result.skipped.append(
+                f"remove unused definitions in {path} "
+                "(project uses exec/eval/getattr/globals somewhere; rerun "
+                "with --force to delete anyway)"
+            )
+            continue
         to_remove_linenos = _top_level_def_lines(tree, target_names)
         if not to_remove_linenos:
             continue
