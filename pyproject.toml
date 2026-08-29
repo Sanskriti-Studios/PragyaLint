@@ -7,7 +7,7 @@ name = "pragyalint"
 version = "0.1.0"
 description = "Static dead-code analyzer for Python projects"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 license = "GPL-3.0-or-later"
 authors = [{ name = "Abhinu" }]
 keywords = [
@@ -29,9 +29,9 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/abhinu/pragyalint"
-Repository = "https://github.com/abhinu/pragyalint"
-Documentation = "https://github.com/abhinu/pragyalint"
+Homepage = "https://github.com/Sanskriti-Studios/PragyaLint"
+Repository = "https://github.com/Sanskriti-Studios/PragyaLint"
+Documentation = "https://github.com/Sanskriti-Studios/PragyaLint"
 
 [project.optional-dependencies]
 dev = [

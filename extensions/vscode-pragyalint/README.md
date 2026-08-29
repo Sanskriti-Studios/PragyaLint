@@ -3,7 +3,7 @@
 Find and remove **dead code** in Python: unreachable modules, unused imports,
 exports, and functions.
 
-Powered by [PragyaLint](https://github.com/abhinu/pragyalint) (GPL-3.0-or-later).
+Powered by [PragyaLint](https://github.com/Sanskriti-Studios/PragyaLint) (GPL-3.0-or-later).
 
 ## Features
 

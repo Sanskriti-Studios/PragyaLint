@@ -35,7 +35,7 @@ pipx install pragyalint
 pip install --user pragyalint
 ```
 
-Requires Python 3.9+.
+Requires Python 3.11+.
 
 ## Quick start
 
