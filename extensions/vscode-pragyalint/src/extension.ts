@@ -23,10 +23,42 @@ interface Report {
   };
 }
 
+function resolveBinary(configured: string): string[] {
+  const parts = configured.trim().split(/\s+/);
+  const bin = parts[0];
+  const rest = parts.slice(1);
+
+  if (bin !== "pragyalint") {
+    // User supplied an explicit path/command — use it verbatim.
+    return [bin, ...rest];
+  }
+
+  const home = process.env.HOME || process.env.USERPROFILE || "";
+  const fs = require("fs") as typeof import("fs");
+  const candidates = [
+    "pragyalint",
+    `${home}/.local/bin/pragyalint`,
+    `${home}/.local/share/pipx/venvs/pragyalint/bin/pragyalint`,
+    `${home}/.local/bin/pragyalint.exe`,
+    `${home}/.local/share/pipx/venvs/pragyalint/Scripts/pragyalint.exe`,
+  ];
+
+  for (const c of candidates) {
+    if (c === "pragyalint") {
+      // Fall through to PATH/locator below only if reachable; otherwise keep trying.
+      if (fs.existsSync(c)) return [c, ...rest];
+      continue;
+    }
+    if (fs.existsSync(c)) return [c, ...rest];
+  }
+
+  return ["pragyalint", ...rest];
+}
+
 function runPragyaLint(args: string[]): Promise<string> {
   return new Promise((resolve, reject) => {
     const cfg = vscode.workspace.getConfiguration("pragyalint");
-    const bin = (cfg.get<string>("binaryPath") || "pragyalint").split(/\s+/);
+    const bin = resolveBinary(cfg.get<string>("binaryPath") || "pragyalint");
     const cwd = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || process.cwd();
     execFile(
       bin[0],
@@ -34,7 +66,11 @@ function runPragyaLint(args: string[]): Promise<string> {
       { cwd, maxBuffer: 16 * 1024 * 1024 },
       (err, stdout, stderr) => {
         if (err && !stdout) {
-          reject(new Error(stderr || err.message));
+          const hint =
+            (err as NodeJS.ErrnoException).code === "ENOENT"
+              ? `\nInstall PragyaLint (pip install pragyalint or pipx install pragyalint), or set the "pragyalint.binaryPath" setting to the executable's full path.`
+              : "";
+          reject(new Error((stderr || err.message).trim() + hint));
         } else {
           resolve(stdout);
         }

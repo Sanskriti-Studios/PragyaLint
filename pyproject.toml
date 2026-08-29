@@ -9,7 +9,7 @@ description = "Static dead-code analyzer for Python projects"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "GPL-3.0-or-later"
-authors = [{ name = "Abhinu" }]
+authors = [{ name = "IndianCoder3" }]
 keywords = [
     "dead-code",
     "lint",

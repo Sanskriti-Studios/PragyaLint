@@ -1,10 +1,20 @@
 {
-  "name": "pragyalint",
-  "displayName": "PragyaLint — Dead-code analyzer",
-  "description": "Find and remove dead code in Python: unreachable modules, unused imports, exports, and functions.",
+  "name": "sks-pragyalint",
+  "displayName": "PragyaLint — Python Dead-code analyzer",
+  "description": "Find and fix dead code in Python: unreachable modules, unused imports, exports, and functions.",
   "version": "0.1.0",
-  "publisher": "Abhinu",
+  "publisher": "IndianCoder3",
   "license": "GPL-3.0-or-later",
+  "icon": "images/icon.png",
+  "author": {
+    "name": "IndianCoder3",
+    "email": "ic3@ic3cool.int.yt"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sanskriti-Studios/PragyaLint"
+  },
+  "homepage": "https://prgl.ic3cool.int.yt",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -52,7 +62,12 @@
         },
         "pragyalint.confidence": {
           "type": "string",
-          "enum": ["high", "medium+", "low+", "all"],
+          "enum": [
+            "high",
+            "medium+",
+            "low+",
+            "all"
+          ],
           "default": "high",
           "description": "Minimum confidence for fixes."
         },
@@ -76,5 +91,8 @@
     "@vscode/test-cli": "^0.0.15",
     "@vscode/vsce": "^3.9.2",
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "vsce": "^2.15.0"
   }
 }
