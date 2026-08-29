@@ -19,21 +19,25 @@
   }
 
   // Right-side icon-only links. Font Awesome classes drive the glyphs.
+  // Local links are base-relative (no leading slash) so <base href> applies.
   var ICONS = [
-    { href: "/docs/", fa: "fa-solid fa-book", label: "Docs", title: "Documentation" },
+    { href: "docs/", fa: "fa-solid fa-book", label: "Docs", title: "Documentation" },
     { href: "https://github.com/Sanskriti-Studios/PragyaLint", fa: "fa-brands fa-github", label: "GitHub", title: "GitHub repository", external: true },
     { href: "https://pypi.org/project/pragyalint/", fa: "fa-brands fa-python", label: "PyPI", title: "PyPI package", external: true },
-    { href: "https://marketplace.visualstudio.com/items?itemName=abhinu.pragyalint", fa: "fa-brands fa-vscode", label: "VS Code", title: "VS Code extension", external: true },
+    { href: "https://marketplace.visualstudio.com/items?itemName=Abhinu.pragyalint", fa: "fa-brands fa-vscode", label: "VS Code", title: "VS Code extension", external: true },
   ];
 
   function injectNav() {
     var navPlaceholder = document.getElementById("nav");
     if (!navPlaceholder) return;
     // Strip the <base> prefix (e.g. /PragyaLint) so link matching works on
-    // both the repo-root and subpath deployments.
+    // both the repo-root and subpath deployments. Local nav hrefs are
+    // base-relative (no leading slash), so compare against "/" + href.
     var activeHref = location.pathname.replace(/^\/[^/]+\//, "/");
     var links = ICONS.map(function (item) {
-      var active = activeHref === item.href || (item.href !== "/" && activeHref.indexOf(item.href) === 0);
+      var active =
+        !item.external &&
+        (activeHref === "/" + item.href || activeHref.indexOf("/" + item.href) === 0);
       return (
         '<a href="' + item.href + '"' +
         (item.external ? ' target="_blank" rel="noopener"' : "") +
@@ -47,7 +51,7 @@
 
     navPlaceholder.outerHTML =
       '<header class="nav"><div class="nav-inner">' +
-      '<a class="brand" href="/">' + brandSvg() + "<span>PragyaLint</span></a>" +
+      '<a class="brand" href=".">' + brandSvg() + "<span>PragyaLint</span></a>" +
       '<nav class="nav-links">' +
       links +
       '<button class="theme-toggle" aria-label="Toggle theme"></button>' +
@@ -62,7 +66,7 @@
       '<footer class="footer"><div class="footer-inner">' +
       "<span>&copy; 2026 PragyaLint — GPL-3.0-or-later</span>" +
       '<span class="footer-icons">' +
-      '<a href="/docs/" aria-label="Docs" title="Docs"><i class="fa-solid fa-book"></i></a>' +
+      '<a href="docs/" aria-label="Docs" title="Docs"><i class="fa-solid fa-book"></i></a>' +
       '<a href="https://github.com/Sanskriti-Studios/PragyaLint" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><i class="fa-brands fa-github"></i></a>' +
       '<a href="https://pypi.org/project/pragyalint/" target="_blank" rel="noopener" aria-label="PyPI" title="PyPI"><i class="fa-brands fa-python"></i></a>' +
       '<a href="https://marketplace.visualstudio.com/items?itemName=abhinu.pragyalint" target="_blank" rel="noopener" aria-label="VS Code" title="VS Code"><i class="fa-brands fa-vscode"></i></a>' +
