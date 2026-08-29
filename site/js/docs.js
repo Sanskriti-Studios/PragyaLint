@@ -15,13 +15,13 @@
   ];
 
   var html = "";
-  // Strip the <base> prefix (e.g. /PragyaLint) so matching works below.
-  var sub = location.pathname.replace(/^\/[^/]+\//, "/");
+  // location.pathname is the real path regardless of <base>; match by tail.
+  var p = location.pathname;
   SECTIONS.forEach(function (sec) {
     html += "<h4>" + sec.label + "</h4>";
     sec.items.forEach(function (item) {
       var full = "/" + item.href;
-      var active = sub === full || sub === full.replace(/\/$/, "/index.html");
+      var active = p === full || p === full.replace(/\/$/, "/index.html") || p.endsWith(full) || p.endsWith(full.replace(/\/$/, "/index.html"));
       html +=
         '<a href="' +
         item.href +

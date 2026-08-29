@@ -31,13 +31,11 @@
     var navPlaceholder = document.getElementById("nav");
     if (!navPlaceholder) return;
     // Strip the <base> prefix (e.g. /PragyaLint) so link matching works on
-    // both the repo-root and subpath deployments. Local nav hrefs are
-    // base-relative (no leading slash), so compare against "/" + href.
-    var activeHref = location.pathname.replace(/^\/[^/]+\//, "/");
+    // both the github.io subpath and custom-domain-root deployments.
+    // location.pathname is always the real path regardless of <base>.
+    var activeHref = location.pathname;
     var links = ICONS.map(function (item) {
-      var active =
-        !item.external &&
-        (activeHref === "/" + item.href || activeHref.indexOf("/" + item.href) === 0);
+      var active = !item.external && (activeHref === "/" + item.href || activeHref.indexOf("/" + item.href) === 0);
       return (
         '<a href="' + item.href + '"' +
         (item.external ? ' target="_blank" rel="noopener"' : "") +
