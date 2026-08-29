@@ -64,6 +64,7 @@ def analyze(
         extensions=extensions,
         ignore_patterns=effective_ignore,
         include_paths=include,
+        conventional_entries=conventional_entries,
     )
     records = graph.build(root_dir, entry)
 

@@ -26,10 +26,12 @@ class ModuleGraphBuilder:
         extensions: Optional[List[str]] = None,
         ignore_patterns: Optional[List[str]] = None,
         include_paths: Optional[List[str]] = None,
+        conventional_entries: bool = True,
     ) -> None:
         self.extensions = extensions or [".py"]
         self.ignore_patterns = ignore_patterns or []
         self.include_paths = include_paths or []
+        self.conventional_entries = conventional_entries
         self._ignored_re = [
             re.compile(p if p.startswith("^") else f"(^|/){p}($|/)")
             for p in self.ignore_patterns
@@ -206,7 +208,9 @@ class ModuleGraphBuilder:
                 path=path,
                 module_name=module_name,
                 is_package=os.path.basename(path) == "__init__.py",
-                is_entry=PathIsEntry(path, module_name, entry_points, root_dir),
+                is_entry=PathIsEntry(
+                    path, module_name, entry_points, root_dir, self.conventional_entries
+                ),
                 imports=self.extract_imports(tree, module_name),
                 exports=self.extract_exports(tree),
             )
@@ -390,9 +394,27 @@ class ModuleGraphBuilder:
                 cycles.append(component)
 
 
-def PathIsEntry(path: str, module_name: str, entry_points: List[str], root_dir: str) -> bool:
+def PathIsEntry(
+    path: str,
+    module_name: str,
+    entry_points: List[str],
+    root_dir: str,
+    conventional_entries: bool = True,
+) -> bool:
     """Determine whether a module qualifies as an analysis entry point."""
+    if conventional_entries and _is_conventional_test_file(path):
+        # pytest (and unittest discovery) import conftest.py / test_*.py /
+        # *_test.py files themselves by walking the filesystem -- nothing
+        # in the rest of the codebase ever does `import test_foo`. A pure
+        # import-graph reachability check will always see these as
+        # "unreachable" even though they're very much alive, so treat them
+        # as entries unconditionally (independent of any explicit --entry
+        # points, which describe the *application's* entries, not the test
+        # runner's).
+        return True
     if not entry_points:
+        if not conventional_entries:
+            return False
         # conventional entries
         if path.endswith(os.path.join("__main__.py")):
             return True
@@ -411,4 +433,20 @@ def PathIsEntry(path: str, module_name: str, entry_points: List[str], root_dir: 
             return True
         if ep == "/" + path.replace(os.sep, "/") or module_name.endswith(ep):
             return True
+    return False
+
+
+def _is_conventional_test_file(path: str) -> bool:
+    """Match common test-discovery conventions: ``conftest.py``, files named
+    ``test_*.py`` or ``*_test.py``, or anything inside a ``tests/``,
+    ``test/``, or ``__tests__/`` directory.
+    """
+    name = os.path.basename(path)
+    if name == "conftest.py":
+        return True
+    if name.startswith("test_") or name.endswith("_test.py"):
+        return True
+    parts = os.path.normpath(path).split(os.sep)
+    if any(p in ("tests", "test", "__tests__") for p in parts[:-1]):
+        return True
     return False

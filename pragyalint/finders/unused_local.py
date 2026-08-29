@@ -71,6 +71,15 @@ class UnusedLocalFinder(Finder):
         for record in records:
             if not record.reachable:
                 continue
+            if record.is_entry and not self.options.get("include_entry_exports", False):
+                # Entry files (conventional entry points, and conventional
+                # test files like test_*.py/conftest.py) are invoked from
+                # outside the import graph -- by the interpreter, or by
+                # pytest's own name-based collection. Their top-level
+                # definitions are the public surface pytest/the runtime
+                # calls into, not dead code, so treat them the same way
+                # unused_exports already treats entry-file exports.
+                continue
             tree = tree_map.get(record.path)
             if tree is None:
                 continue
