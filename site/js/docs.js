@@ -15,12 +15,11 @@
   ];
 
   var html = "";
+  var sub = location.pathname.replace(/^\/[^/]+\//, "/");
   SECTIONS.forEach(function (sec) {
     html += "<h4>" + sec.label + "</h4>";
     sec.items.forEach(function (item) {
-      var active =
-        location.pathname === item.href ||
-        (item.href === "/docs/" && location.pathname === "/docs/");
+      var active = sub === item.href;
       html +=
         '<a href="' +
         item.href +

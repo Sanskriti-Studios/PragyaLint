@@ -29,7 +29,9 @@
   function injectNav() {
     var navPlaceholder = document.getElementById("nav");
     if (!navPlaceholder) return;
-    var activeHref = location.pathname;
+    // Strip the <base> prefix (e.g. /PragyaLint) so link matching works on
+    // both the repo-root and subpath deployments.
+    var activeHref = location.pathname.replace(/^\/[^/]+\//, "/");
     var links = ICONS.map(function (item) {
       var active = activeHref === item.href || (item.href !== "/" && activeHref.indexOf(item.href) === 0);
       return (
