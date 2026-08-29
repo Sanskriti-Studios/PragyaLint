@@ -70,7 +70,8 @@ function runPragyaLint(args: string[]): Promise<string> {
             (err as NodeJS.ErrnoException).code === "ENOENT"
               ? `\nInstall PragyaLint (pip install pragyalint or pipx install pragyalint), or set the "pragyalint.binaryPath" setting to the executable's full path.`
               : "";
-          reject(new Error((stderr || err.message).trim() + hint));
+          const msg = (stderr || err.message || "pragyalint exited with an error").trim();
+          reject(new Error(msg + hint));
         } else {
           resolve(stdout);
         }
@@ -116,7 +117,9 @@ function renderProblems() {
 
     for (const f of result.findings || []) {
       if (f.confidence === "low" && !showLow) continue;
-      const filePath = f.path || f.module.replace(/\./g, path.sep) + ".py";
+      const filePath =
+        f.path ||
+        (f.module ? f.module.replace(/\./g, path.sep) + ".py" : "unknown.py");
       const range = new vscode.Range(
         Math.max(0, (f.line || 1) - 1),
         Math.max(0, (f.column || 1) - 1),
@@ -148,9 +151,10 @@ function renderProblems() {
 
     const summary = result.summary;
     if (summary) {
+      const findings = summary.findings ?? 0;
       vscode.window.showInformationMessage(
-        `PragyaLint: ${summary.findings} finding${summary.findings === 1 ? "" : "s"} in ${summary.files} files ` +
-          `(${summary.high} high, ${summary.medium} medium, ${summary.low} low)`
+        `PragyaLint: ${findings} finding${findings === 1 ? "" : "s"} in ${summary.files ?? 0} files ` +
+          `(${summary.high ?? 0} high, ${summary.medium ?? 0} medium, ${summary.low ?? 0} low)`
       );
     }
   });

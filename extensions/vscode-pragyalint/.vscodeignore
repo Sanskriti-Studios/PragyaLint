@@ -13,3 +13,4 @@ pnpm-workspace.yaml
 .gitignore
 tsconfig.json
 **/*.vsix
+test-extension.js
