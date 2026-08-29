@@ -5,6 +5,16 @@ All notable changes to PragyaLint are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-08-29
+
+### Changed
+
+- Visual Studio Code extension ships its own packaged `.vsix` (publisher
+  `IndianCoder3`) with an icon, license, and homepage metadata.
+- VS Code extension auto-detects the `pragyalint` binary in common pipx/pip
+  locations and surfaces a helpful message when it cannot be found.
+- Package author field anonymized to `IndianCoder3`.
+
 ## [0.1.0] - 2026-08-29
 
 ### Added
