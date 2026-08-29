@@ -27,6 +27,8 @@ TypeScript/JavaScript) — PragyaLint brings the same concept to Python.
 
 ## Installation
 
+### Command-line tool
+
 ```bash
 pip install pragyalint
 # or
@@ -36,6 +38,28 @@ pip install --user pragyalint
 ```
 
 Requires Python 3.11+.
+
+### Visual Studio Code extension
+
+Install **PragyaLint for Visual Studio Code** from the Marketplace:
+
+- **Marketplace:** https://marketplace.visualstudio.com/items?itemName=IndianCoder3.sks-pragyalint
+- **Install via command line:** `code --install-extension IndianCoder3.sks-pragyalint`
+- Or open the Extensions panel (`Ctrl+Shift+X`) and search for **"PragyaLint"**.
+
+The extension publishes dead-code findings to the **Problems panel** (colored by
+confidence) and provides commands to preview and apply fixes from the editor:
+
+| Command | What it does |
+| --- | --- |
+| `PragyaLint: Scan workspace` | Reports dead code into the Problems panel |
+| `PragyaLint: Preview fixes (dry-run)` | Shows planned changes, no edits |
+| `PragyaLint: Apply safe fixes` | Applies high-confidence fixes |
+| `PragyaLint: Scan and remove dead code (all confidence)` | Full prune |
+
+It requires the `pragyalint` CLI on your PATH (see above). If the CLI isn't found,
+set the `pragyalint.binaryPath` setting to the full path of the executable. The
+extension also auto-detects common `pipx`/`pip` install locations.
 
 ## Quick start
 

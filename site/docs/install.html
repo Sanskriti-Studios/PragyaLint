@@ -48,6 +48,29 @@
           interferes with your project's dependencies.
         </p>
 
+        <h2 id="vscode">Visual Studio Code extension</h2>
+        <p>
+          Install <strong>PragyaLint for Visual Studio Code</strong> to surface
+          dead-code findings right in the editor and apply fixes from the Problems
+          panel.
+        </p>
+<pre><code>code --install-extension IndianCoder3.sks-pragyalint</code></pre>
+        <p>
+          Or open the Extensions panel (<code>Ctrl+Shift+X</code>) and search for
+          <strong>PragyaLint</strong>. Or browser to:
+        </p>
+        <p>
+          <a href="https://marketplace.visualstudio.com/items?itemName=IndianCoder3.sks-pragyalint"
+             target="_blank" rel="noopener">
+            marketplace.visualstudio.com/…IndianCoder3.sks-pragyalint
+          </a>
+        </p>
+        <p>
+          The extension still needs the <code>pragyalint</code> CLI on your PATH
+          (install via PyPI or pipx above). If it can't find the binary, set the
+          <code>pragyalint.binaryPath</code> setting to its full path.
+        </p>
+
         <h2 id="install-locally">From source</h2>
 <pre><code>git clone https://github.com/Sanskriti-Studios/PragyaLint
 cd pragyalint
