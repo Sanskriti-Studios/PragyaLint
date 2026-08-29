@@ -15,7 +15,7 @@ Powered by [PragyaLint](https://github.com/Sanskriti-Studios/PragyaLint) (GPL-3.
 
 ## Requirements
 
-- Python 3.9+
+- Python 3.11+
 - `pragyalint` on your PATH (`pip install pragyalint`)
 
 ## Commands
