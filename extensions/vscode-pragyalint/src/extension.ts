@@ -15,11 +15,11 @@ interface Finding {
 interface Report {
   findings: Finding[];
   summary?: {
-    files: number;
+    total_files: number;
+    reachable_files: number;
     findings: number;
-    high: number;
-    medium: number;
-    low: number;
+    by_rule: Record<string, number>;
+    by_confidence: Record<string, number>;
   };
 }
 
@@ -152,9 +152,10 @@ function renderProblems() {
     const summary = result.summary;
     if (summary) {
       const findings = summary.findings ?? 0;
+      const c = summary.by_confidence || {};
       vscode.window.showInformationMessage(
-        `PragyaLint: ${findings} finding${findings === 1 ? "" : "s"} in ${summary.files ?? 0} files ` +
-          `(${summary.high ?? 0} high, ${summary.medium ?? 0} medium, ${summary.low ?? 0} low)`
+        `PragyaLint: ${findings} finding${findings === 1 ? "" : "s"} in ${summary.total_files ?? 0} files ` +
+          `(${c.high ?? 0} high, ${c.medium ?? 0} medium, ${c.low ?? 0} low)`
       );
     }
   });

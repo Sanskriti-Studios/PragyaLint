@@ -161,6 +161,23 @@ async function run() {
   } catch (e) {
     fail("scan threw: " + e.message);
   }
+
+  // 2b) SUMMARY correctness against the REAL project (when PRAGYA_REAL_ROOT set)
+  if (process.env.PRAGYA_REAL_ROOT) {
+    console.log("\n[2b] summary toast matches real project (no 0-files bug)");
+    process.env.PRAGYA_TEST_ROOT = process.env.PRAGYA_REAL_ROOT;
+    registered.messages = [];
+    await registered.commands["pragyalint.scan"]();
+    const toast = registered.messages.join(" ");
+    ok("summary produced a toast: " + JSON.stringify(toast));
+    const m = toast.match(/in (\d+) files/);
+    if (!m || m[1] === "0") {
+      fail("summary still reports 0 files (bug not fixed): " + toast);
+    } else {
+      ok("summary reports non-zero files (" + m[1] + " files): " + toast);
+    }
+  }
+
   // should have produced diagnostics into collections if binary ran
   if (process.env.PRAGYA_BIN && process.env.PRAGYA_ROOT_ANALYZE) {
     if (registered.collections.some((c) => (c.diags || []).length > 0)) {
@@ -171,18 +188,16 @@ async function run() {
   }
 
   // 3) summary toast guards undefined fields
-  console.log("\n[3] summary handles missing fields");
+  console.log("\n[3] summary uses real CLI field names");
   registered.messages = [];
-  // Call severity/summary path directly through a captured scan? Instead verify
-  // renderProblems handles a report where summary fields are undefined by
-  // monkeypatching runPragyaLint through the module? Simpler: the summary code is
-  // exercised when the CLI returns a summary. We'll verify the toast uses ?? 0 by
-  // checking the compiled source contains the guard.
   const compiledSrc = fs.readFileSync(extPath, "utf8");
-  if (!compiledSrc.includes("summary.findings ?? 0")) {
-    fail("summary guard not present in compiled output");
+  if (!compiledSrc.includes("summary.total_files")) {
+    fail("summary does not use total_files (real CLI field)");
   }
-  ok("summary uses nullish guards (?? 0)");
+  if (!compiledSrc.includes("summary.by_confidence")) {
+    fail("summary does not use by_confidence (real CLI field)");
+  }
+  ok("summary reads total_files + by_confidence (matches CLI)");
 
   // 4) fix commands build correct args
   console.log("\n[4] cleanAll/dryRun/fix build expected args");
