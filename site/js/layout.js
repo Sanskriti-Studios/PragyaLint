@@ -24,7 +24,7 @@
     { href: "docs/", fa: "fa-solid fa-book", label: "Docs", title: "Documentation" },
     { href: "https://github.com/Sanskriti-Studios/PragyaLint", fa: "fa-brands fa-github", label: "GitHub", title: "GitHub repository", external: true },
     { href: "https://pypi.org/project/pragyalint/", fa: "fa-brands fa-python", label: "PyPI", title: "PyPI package", external: true },
-    { href: "https://marketplace.visualstudio.com/items?itemName=Abhinu.pragyalint", fa: "fa-brands fa-vscode", label: "VS Code", title: "VS Code extension", external: true },
+    { href: "https://marketplace.visualstudio.com/items?itemName=Abhinu.pragyalint", fa: "fa-solid fa-code", label: "VS Code", title: "VS Code extension", external: true },
   ];
 
   function injectNav() {
@@ -69,7 +69,7 @@
       '<a href="docs/" aria-label="Docs" title="Docs"><i class="fa-solid fa-book"></i></a>' +
       '<a href="https://github.com/Sanskriti-Studios/PragyaLint" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub"><i class="fa-brands fa-github"></i></a>' +
       '<a href="https://pypi.org/project/pragyalint/" target="_blank" rel="noopener" aria-label="PyPI" title="PyPI"><i class="fa-brands fa-python"></i></a>' +
-      '<a href="https://marketplace.visualstudio.com/items?itemName=abhinu.pragyalint" target="_blank" rel="noopener" aria-label="VS Code" title="VS Code"><i class="fa-brands fa-vscode"></i></a>' +
+      '<a href="https://marketplace.visualstudio.com/items?itemName=Abhinu.pragyalint" target="_blank" rel="noopener" aria-label="VS Code" title="VS Code"><i class="fa-solid fa-code"></i></a>' +
       "</span>" +
       "</div></footer>";
   }
