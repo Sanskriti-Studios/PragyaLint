@@ -1,0 +1,52 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+wheels/
+.venv/
+venv/
+env/
+.venvs/
+pip-wheel-metadata/
+share/python-wheels/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.nox/
+.tox/
+.cache/
+coverage.xml
+*.cover
+
+# Lint / typing
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+dmypy.json
+pyrightconfig.json
+.pytype/
+
+# Packaging / publishing
+*.whl
+*.tar.gz
+requirements.txt.bak
+
+# Editors / OS
+.DS_Store
+*.swp
+*.swo
+.idea/
+.vscode/
+*.log
+
+# Environments
+.env
+.env.*
+!.env.example

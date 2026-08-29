@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Getting started — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="PragyaLint docs: how to scan your Python project for dead code, understand findings, and integrate with CI."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+        <h1>Getting started</h1>
+        <p class="lead">
+          PragyaLint is a static dead-code analyzer for Python. This guide walks you
+          through your first scan, how to read the output, and how to make it part of
+          your workflow.
+        </p>
+
+        <h2 id="first-scan">Your first scan</h2>
+        <p>
+          After <a href="install.html">installing</a>, run PragyaLint from your
+          project root:
+        </p>
+<pre><code>$ pragyalint
+
+./src/orphan.py
+  &#10008; [HIGH  ] module 'orphan' is not reachable from any entry point
+
+./src/utils/helper.py
+  &#9888; [MEDIUM] export 'legacy_fn' of module 'utils.helper' is never imported
+
+./src/app.py
+  &#10008; [HIGH  ] import 'os' is never used
+
+3 findings in 12 files (11 reachable).
+  2 high | 1 medium</code></pre>
+        <p>
+          By default PragyaLint detects entry points automatically (files like
+          <code>main.py</code>, <code>app.py</code>, <code>__main__.py</code>, and
+          <code>setup.py</code>), builds a module graph from them, and marks anything
+          unreachable as a candidate for removal.
+        </p>
+
+        <h2 id="reading-output">Reading the output</h2>
+        <p>
+          Each finding has a <strong>rule</strong>, a <strong>confidence</strong>,
+          and a location.
+        </p>
+
+        <h3>Rules</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Rule</th><th>Default confidence</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>unused_file</code></td><td><span class="conf conf-high">high</span></td><td>Module not reachable from any entry point</td></tr>
+              <tr><td><code>unused_import</code></td><td><span class="conf conf-high">high</span></td><td>Import never used in its module</td></tr>
+              <tr><td><code>unused_export</code></td><td><span class="conf conf-medium">medium</span></td><td>Public name never imported elsewhere</td></tr>
+              <tr><td><code>unused_local</code></td><td><span class="conf conf-medium">medium</span></td><td>Function/class/variable defined but never used</td></tr>
+              <tr><td><code>cycle</code></td><td><span class="conf conf-low">low</span></td><td>Circular import cycle</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Confidence levels</h3>
+        <ul>
+          <li>
+            <span class="conf conf-high">high</span> — structurally certain
+            (module unreachable, import unused).
+          </li>
+          <li>
+            <span class="conf conf-medium">medium</span> — strongly implied
+            (export/definition not referenced anywhere you can see).
+          </li>
+          <li>
+            <span class="conf conf-low">low</span> — heuristic (constant
+            assignments, cycles).
+          </li>
+        </ul>
+
+        <div class="callout">
+          <strong>Tip:</strong> medium-confidence findings can be false positives if
+          code is used dynamically (e.g. reflection, plugins, or <code>__all__</code>
+          re-exports). Review them before acting.
+        </div>
+
+        <h2 id="fixing">Removing dead code</h2>
+        <p>
+          Analysis only reports. To actually remove code, use
+          <code>--fix</code> — always with a dry-run first:
+        </p>
+<pre><code># Preview what would change (does NOT modify files)
+pragyalint --fix --dry-run
+
+# Remove dead code
+pragyalint --fix
+
+# Include lower-confidence removals too
+pragyalint --fix exports --confidence medium+</code></pre>
+        <p>
+          Read the <a href="fixes.html">Fixes</a> page for the full details and safety
+          model.
+        </p>
+
+        <h2 id="ci">Running in CI</h2>
+        <p>
+          Use <code>--fail-on</code> to gate your pipeline on dead-code findings, and
+          JSON or SARIF output to feed other tools:
+        </p>
+<pre><code>pragyalint --fail-on high            # exits non-zero on high findings
+pragyalint --json                    # machine-readable report
+pragyalint --sarif &gt; pragyalint.sarif  # GitHub Code Scanning</code></pre>
+
+        <h2 id="next">Next steps</h2>
+        <ul>
+          <li><a href="config.html">Configuration reference</a> — <code>pragyalint.toml</code> and <code>pyproject.toml</code>.</li>
+          <li><a href="fixes.html">Fixes</a> — understand the confidence-gated fixer.</li>
+          <li><a href="faq.html">FAQ</a> — common questions and limitations.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/docs.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

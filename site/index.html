@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PragyaLint — Dead-code analyzer for Python</title>
+    <meta
+      name="description"
+      content="PragyaLint finds and removes dead code in Python: unused files, imports, exports, and functions. CI-ready, confidence-gated, zero dependencies."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <main>
+      <section class="hero">
+        <div class="container">
+          <span class="badge" data-reveal>&#128248; Static dead-code analyzer for Python</span>
+          <h1 data-reveal>
+            Prune your Python.<br />
+            <span class="gradient-text">Ship only what you use.</span>
+          </h1>
+          <p data-reveal>
+            PragyaLint builds a dependency graph from your entry points and flags
+            everything that's never reached — unused files, imports, exports, and
+            functions. Then it removes the safe ones for you.
+          </p>
+          <div class="hero-cta" data-reveal>
+            <a class="btn btn-primary" href="/docs/install.html">Get started</a>
+            <a class="btn btn-ghost" href="#features">See features</a>
+          </div>
+          <div class="hero-trust" data-reveal>
+            <i class="fa-solid fa-code"></i> pip install pragyalint
+            &nbsp;&bull;&nbsp;
+            <i class="fa-solid fa-box"></i> zero dependencies
+            &nbsp;&bull;&nbsp;
+            <i class="fa-solid fa-robot"></i> CI-ready
+          </div>
+
+          <div class="demo" data-reveal>
+            <div class="demo-bar">
+              <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+              <span class="demo-tabs">
+                <button data-panel="scan" class="active">scan</button>
+                <button data-panel="fix">&#9998;&nbsp;fix</button>
+                <button data-panel="ci">CI</button>
+              </span>
+            </div>
+            <div class="demo-body demo-run"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-alt" id="features">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <h2>Everything you need to clean up</h2>
+            <p>Detect once, verify, then remove — with safety built in.</p>
+          </div>
+          <div class="stats" data-reveal>
+            <div class="stat"><span data-count="0">0</span><small>dead files found</small></div>
+            <div class="stat"><span data-count="5">5</span><small>rules</small></div>
+            <div class="stat"><span data-count="3">3</span><small>confidence levels</small></div>
+            <div class="stat"><span data-count="0">0</span><small>runtime deps</small></div>
+          </div>
+          <div class="grid">
+            <div class="card tilt" data-reveal>
+              <div class="icon">&#128193;</div>
+              <h3>Unreachable files</h3>
+              <p>
+                Modules that nothing reaches from your entry points are flagged at
+                high confidence and can be deleted in one pass.
+              </p>
+            </div>
+            <div class="card tilt" data-reveal>
+              <div class="icon">&#128279;</div>
+              <h3>Dead imports</h3>
+              <p>
+                Never-imported names get trimmed, including individual names inside
+                multi-name imports.
+              </p>
+            </div>
+            <div class="card tilt" data-reveal>
+              <div class="icon">&#128686;</div>
+              <h3>Unused exports &amp; functions</h3>
+              <p>
+                Find defined-but-unused functions, classes, and variables — and
+                remove them with confidence gating.
+              </p>
+            </div>
+            <div class="card tilt" data-reveal>
+              <div class="icon">&#129302;</div>
+              <h3>Confidence levels</h3>
+              <p>
+                Every finding is rated
+                <span class="conf conf-high">high</span>,
+                <span class="conf conf-medium">medium</span>, or
+                <span class="conf conf-low">low</span> so you know what to trust.
+              </p>
+            </div>
+            <div class="card tilt" data-reveal>
+              <div class="icon">&#9889;</div>
+              <h3>CI-ready</h3>
+              <p>
+                <code>--fail-on high</code> blocks your pipeline on new dead code.
+                JSON and SARIF output integrate anywhere.
+              </p>
+            </div>
+            <div class="card tilt" data-reveal>
+              <div class="icon">&#128736;</div>
+              <h3>Dry-run first</h3>
+              <p>
+                Preview every change with <code>--dry-run</code> before anything
+                touches disk. Explicit, never implicit.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-head">
+            <h2>Built with the standard library</h2>
+            <p>No parser to ship, no dependencies to wrangle.</p>
+          </div>
+          <div class="grid" style="max-width: 820px; margin: 0 auto">
+            <div class="card tilt" data-reveal>
+              <h3>Pure Python &bull; <code>ast</code>-powered</h3>
+              <p>
+                PragyaLint uses the Python standard-library <code>ast</code> module
+                to parse and analyze code. That means a complete, battle-tested
+                parser with <strong>zero external dependencies</strong> and clean
+                distribution via PyPI or <code>pipx</code>.
+              </p>
+            </div>
+            <div class="card tilt" data-reveal>
+              <h3>Inspired by OptiPrune</h3>
+              <p>
+                PragyaLint brings the same concept as
+                <a href="https://github.com/optiprune/cli">OptiPrune</a> (a dead-code
+                analyzer for TypeScript/JavaScript) to the Python ecosystem.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-alt">
+        <div class="container" style="text-align: center">
+          <h2 style="font-size: 2rem; margin: 0 0 12px">Ready to trim the fat?</h2>
+          <p style="color: var(--fg-muted); margin: 0 0 28px">
+            Install, scan, dry-run, then fix.
+          </p>
+          <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap">
+            <a class="btn btn-primary" href="/docs/install.html">Install PragyaLint</a>
+            <a class="btn btn-ghost" href="/docs/">Read the docs</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="footer"></div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

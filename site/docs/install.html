@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Installation — PragyaLint Docs</title>
+    <meta name="description" content="How to install PragyaLint and verify your setup." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+        <h1>Installation</h1>
+        <p class="lead">PragyaLint requires Python 3.9 or newer and has zero runtime dependencies.</p>
+
+        <h2 id="pypi">From PyPI</h2>
+<pre><code>pip install pragyalint</code></pre>
+
+        <h2 id="pipx">With pipx (recommended for CLI use)</h2>
+<pre><code>pipx install pragyalint</code></pre>
+        <p>
+          <code>pipx</code> installs PragyaLint in an isolated environment so it never
+          interferes with your project's dependencies.
+        </p>
+
+        <h2 id="install-locally">From source</h2>
+<pre><code>git clone https://github.com/abhinu/pragyalint
+cd pragyalint
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"</code></pre>
+
+        <h2 id="verify">Verify the install</h2>
+<pre><code>pragyalint --version
+pragyalint --help</code></pre>
+        <p>You should see the version number and the list of commands/options.</p>
+
+        <h2 id="upgrade">Upgrading</h2>
+<pre><code>pip install --upgrade pragyalint</code></pre>
+
+        <h2 id="uninstall">Uninstalling</h2>
+<pre><code>pip uninstall pragyalint</code></pre>
+
+        <div class="callout">
+          <strong>Tip:</strong> install PragyaLint as a <em>development</em>
+          dependency in your project (e.g. <code>pip install -U pragyalint</code> in
+          your dev environment or CI) so it's available for scan and fix steps.
+        </div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/docs.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

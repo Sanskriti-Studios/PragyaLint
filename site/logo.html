@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PragyaLint Logo — Animated Gear &amp; Chain</title>
+    <meta name="description" content="Animated PragyaLint brand mark: a gear-and-chain mechanism driving a pruning cutter." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <style>
+      body { background-color: #0d0b1e; }
+
+      .logo-lab { padding: 48px 20px 40px; text-align: center; }
+      .logo-lab h1 { color: #eeeafc; }
+
+      .svg-wrap {
+        width: 90vw;
+        max-width: 800px;
+        margin: 0 auto 26px;
+      }
+      .svg-wrap svg { width: 100%; height: auto; display: block; }
+
+      .gear-body { fill: #2a1b54; stroke: #7b52ee; stroke-width: 4; }
+      .gear-teeth { fill: #4c2885; stroke: #9d72ff; stroke-width: 2; }
+      .center-hole { fill: #0d0b1e; stroke: #00d2ff; stroke-width: 3; }
+      .chain-path { fill: none; stroke: #1a153b; stroke-width: 14; stroke-linejoin: round; }
+      .chain-link { fill: #00d2ff; stroke: #7b52ee; stroke-width: 1.5; }
+
+      /* crossed pruning blade dead center of big gear */
+      .cutter { stroke: #9d72ff; stroke-width: 6; stroke-linecap: round; }
+
+      .controls { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
+      .slider-wrap { display: flex; align-items: center; gap: 10px; margin: 10px auto 0; max-width: 320px; }
+      .slider-wrap label { color: var(--fg-muted); font-size: .8rem; }
+      input[type="range"] { flex: 1; accent-color: #7b52ee; }
+    </style>
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <section class="logo-lab">
+      <h1>PragyaLint</h1>
+      <p class="lead">Gear &amp; chain mark — the belt spins the driven gear &amp; the blade prunes dead code</p>
+
+      <div class="svg-wrap">
+        <svg id="gearSvg" viewBox="0 0 800 500">
+          <!-- background chain track (guide) -->
+          <path id="chainTrack" class="chain-path"
+            d="M 250,110 L 550,185 A 65,65 0 0,1 550,315 L 250,390 A 140,140 0 0,1 250,110 Z" />
+
+          <!-- moving chain links (JS) -->
+          <g id="chainLinks"></g>
+
+          <!-- big left gear -->
+          <g id="bigGear">
+            <circle cx="250" cy="250" r="130" class="gear-body" />
+            <g id="bigGearTeeth"></g>
+            <circle cx="250" cy="250" r="40" class="center-hole" />
+            <!-- static crossed blade (pruner) -->
+            <line class="cutter" x1="250" y1="205" x2="250" y2="295" />
+            <line class="cutter" x1="205" y1="250" x2="295" y2="250" />
+          </g>
+
+          <!-- small driven gear -->
+          <g id="smallGear">
+            <circle cx="550" cy="250" r="55" class="gear-body" />
+            <g id="smallGearTeeth"></g>
+            <circle cx="550" cy="250" r="20" class="center-hole" />
+          </g>
+        </svg>
+      </div>
+
+      <div class="controls">
+        <button class="btn" id="pauseBtn">Pause</button>
+      </div>
+      <div class="slider-wrap">
+        <label>speed</label>
+        <input type="range" id="speed" min="1" max="20" value="8" />
+      </div>
+    </section>
+
+    <div id="footer"></div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/main.js"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        function createTeeth(containerId, cx, cy, count, innerRadius, outerRadius, width) {
+          var container = document.getElementById(containerId);
+          for (var i = 0; i < count; i++) {
+            var angle = (i * 360 / count) * (Math.PI / 180);
+            var x1 = cx + innerRadius * Math.cos(angle - width);
+            var y1 = cy + innerRadius * Math.sin(angle - width);
+            var x2 = cx + outerRadius * Math.cos(angle - width / 2);
+            var y2 = cy + outerRadius * Math.sin(angle - width / 2);
+            var x3 = cx + outerRadius * Math.cos(angle + width / 2);
+            var y3 = cy + outerRadius * Math.sin(angle + width / 2);
+            var x4 = cx + innerRadius * Math.cos(angle + width);
+            var y4 = cy + innerRadius * Math.sin(angle + width);
+            var tooth = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            tooth.setAttribute("points", x1 + "," + y1 + " " + x2 + "," + y2 + " " + x3 + "," + y3 + " " + x4 + "," + y4);
+            tooth.setAttribute("class", "gear-teeth");
+            container.appendChild(tooth);
+          }
+        }
+
+        createTeeth("bigGearTeeth", 250, 250, 16, 125, 165, 0.08);
+        createTeeth("smallGearTeeth", 550, 250, 10, 50, 72, 0.15);
+
+        var chainTrack = document.getElementById("chainTrack");
+        var chainContainer = document.getElementById("chainLinks");
+        var totalPathLength = chainTrack.getTotalLength();
+        var numberOfLinks = 28;
+        var links = [];
+
+        for (var i = 0; i < numberOfLinks; i++) {
+          var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          rect.setAttribute("width", "16");
+          rect.setAttribute("height", "8");
+          rect.setAttribute("rx", "3");
+          rect.setAttribute("class", "chain-link");
+          chainContainer.appendChild(rect);
+          links.push(rect);
+        }
+
+        var speed = document.getElementById("speed");
+        var pauseBtn = document.getElementById("pauseBtn");
+        var running = true;
+        var step = 0.5;
+
+        pauseBtn.onclick = function () {
+          running = !running;
+          pauseBtn.textContent = running ? "Pause" : "Resume";
+        };
+        speed.oninput = function () {
+          step = Number(speed.value) * 0.5;
+        };
+
+        var rotationAngle = 0;
+
+        function animate() {
+          if (running) rotationAngle += step;
+
+          document.getElementById("bigGear").setAttribute("transform", "rotate(" + rotationAngle + ", 250, 250)");
+          var smallGearSpeed = rotationAngle * (140 / 65);
+          document.getElementById("smallGear").setAttribute("transform", "rotate(" + smallGearSpeed + ", 550, 250)");
+
+          var distanceOffset = (rotationAngle * 2.3) % totalPathLength;
+          links.forEach(function (link, index) {
+            var distance = (distanceOffset + (index * (totalPathLength / numberOfLinks))) % totalPathLength;
+            var point = chainTrack.getPointAtLength(distance);
+            var nextPoint = chainTrack.getPointAtLength((distance + 1) % totalPathLength);
+            var angle = Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x) * (180 / Math.PI);
+            link.setAttribute("transform", "translate(" + (point.x - 8) + ", " + (point.y - 4) + ") rotate(" + angle + ", 8, 4)");
+          });
+
+          requestAnimationFrame(animate);
+        }
+
+        animate();
+      })();
+    </script>
+  </body>
+</html>

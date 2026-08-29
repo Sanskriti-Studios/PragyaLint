@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 32" fill="none">
+  <!-- big gear (left) -->
+  <circle cx="16" cy="16" r="7.5" fill="#7b52ee"/>
+  <circle cx="16" cy="16" r="11.5" stroke="#9d72ff" stroke-width="2"/>
+  <!-- small driven gear (right) -->
+  <circle cx="38" cy="16" r="5.5" fill="#7b52ee"/>
+  <circle cx="38" cy="16" r="8.5" stroke="#9d72ff" stroke-width="2"/>
+  <!-- belt runs -->
+  <path d="M27.5 7.5 L29.5 7.5 M27.5 24.5 L29.5 24.5" stroke="#00d2ff" stroke-width="2" stroke-linecap="round"/>
+  <!-- hubs -->
+  <circle cx="16" cy="16" r="3" fill="#0d0b1e" stroke="#00d2ff" stroke-width="1.5"/>
+  <circle cx="38" cy="16" r="2.2" fill="#0d0b1e" stroke="#00d2ff" stroke-width="1.5"/>
+  <!-- crossed blade -->
+  <path d="M11 8 L21 24 M21 8 L11 24" stroke="#9d72ff" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
+</svg>

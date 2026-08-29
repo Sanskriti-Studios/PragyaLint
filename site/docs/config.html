@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Configuration — PragyaLint Docs</title>
+    <meta name="description" content="PragyaLint configuration reference: pragyalint.toml, pyproject.toml, and CLI overrides." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+        <h1>Configuration</h1>
+        <p class="lead">
+          PragyaLint reads settings from <code>pragyalint.toml</code>,
+          <code>pragyalint.json</code>, or the <code>[tool.pragyalint]</code> table in
+          your <code>pyproject.toml</code>. CLI flags always take precedence.
+        </p>
+
+        <h2 id="example">Example <code>pragyalint.toml</code></h2>
+<pre><code>[pragyalint]
+include = ["src"]
+exclude = ["src/generated"]
+entries = ["src/main.py", "src/app.py"]
+
+[reporter]
+format = "pretty"
+
+[ci]
+fail-on = "high"
+json = true</code></pre>
+
+        <h2 id="options">Options</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Option</th><th>Type</th><th>Default</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>include</code></td>
+                <td>string[]</td>
+                <td><code>["."]</code></td>
+                <td>Directories/files to scan.</td>
+              </tr>
+              <tr>
+                <td><code>exclude</code></td>
+                <td>string[]</td>
+                <td><code>[]</code></td>
+                <td>Paths to ignore (gitignore-style patterns supported).</td>
+              </tr>
+              <tr>
+                <td><code>entries</code></td>
+                <td>string[]</td>
+                <td>auto</td>
+                <td>Explicit entry-point files. Auto-detected if unset.</td>
+              </tr>
+              <tr>
+                <td><code>reporter.format</code></td>
+                <td>string</td>
+                <td><code>"pretty"</code></td>
+                <td>Output format: <code>pretty</code>, <code>compact</code>.</td>
+              </tr>
+              <tr>
+                <td><code>ci.fail-on</code></td>
+                <td>string</td>
+                <td><code>""</code></td>
+                <td>Exit non-zero if findings at/above this confidence exist.</td>
+              </tr>
+              <tr>
+                <td><code>ci.json</code></td>
+                <td>bool</td>
+                <td>false</td>
+                <td>Emit a JSON report.</td>
+              </tr>
+              <tr>
+                <td><code>ci.sarif</code></td>
+                <td>bool</td>
+                <td>false</td>
+                <td>Emit a SARIF report for Code Scanning.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="pyproject">Using <code>pyproject.toml</code></h2>
+        <p>Add a <code>[tool.pragyalint]</code> table to keep everything in one file:</p>
+<pre><code>[tool.pragyalint]
+include = ["src"]
+fail-on = "high"</code></pre>
+
+        <h2 id="cli">Precedence</h2>
+        <ol>
+          <li>CLI arguments (highest)</li>
+          <li><code>pragyalint.toml</code> / <code>pragyalint.json</code> (found in CWD)</li>
+          <li><code>[tool.pragyalint]</code> in <code>pyproject.toml</code></li>
+          <li>Built-in defaults (lowest)</li>
+        </ol>
+
+        <h2 id="discovery">Config discovery</h2>
+        <p>
+          PragyaLint looks for <code>pragyalint.toml</code> first, then
+          <code>pragyalint.json</code>, then <code>pyproject.toml</code>, walking up
+          from the current working directory.
+        </p>
+
+        <div class="callout">
+          <strong>Note:</strong> the exact option names in this reference match the
+          CLI flags (dashes become underscores). Check <code>pragyalint --help</code>
+          for the current list if anything differs.
+        </div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/docs.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,107 @@
+name: binaries
+
+# Builds standalone executables for Windows (EXE), Linux, and macOS using
+# PyInstaller and attaches them to the GitHub Release created by the
+# `release:` trigger (see publish.yml).
+#
+# The build matrix runs in parallel on native runners (Windows, Ubuntu, macOS).
+# macOS binaries are built with an unsigned quirk: the `codesign` step is kept
+# off unless a signing identity is provided via the secret `MACOS_CERT`.
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  # Manual trigger: run to build binaries off the current code.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-binaries:
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact: pragyalint-windows-x64.exe
+            ext: .exe
+            args: --onefile --name pragyalint
+          - os: ubuntu-latest
+            artifact: pragyalint-linux-x64
+            ext: ""
+            args: --onefile --name pragyalint
+          - os: macos-latest
+            artifact: pragyalint-macos-x64
+            ext: ""
+            args: --onefile --name pragyalint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build with PyInstaller
+        run: pyinstaller --clean --noconfirm ${{ matrix.args }} pragyalint/cli.py
+
+      - name: Locate binary
+        id: loc
+        shell: bash
+        run: |
+          if [ "${{ matrix.ext }}" = ".exe" ]; then
+            echo "bin=dist/pragyalint${{ matrix.ext }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "bin=dist/pragyalint" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Rename artifact
+        shell: bash
+        run: |
+          cp "${{ steps.loc.outputs.bin }}" \
+             "${{ runner.temp }}/${{ matrix.artifact }}"
+
+      - name: Make executable (unix)
+        if: matrix.os != 'windows-latest'
+        run: chmod +x "${{ runner.temp }}/${{ matrix.artifact }}"
+
+      - name: Smoke-test the binary
+        shell: bash
+        run: |
+          BIN="${{ runner.temp }}/${{ matrix.artifact }}"
+          "$BIN" --version
+          "$BIN" --help | head -5
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ runner.temp }}/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  # Runs only when the build is part of (or triggered by) a published release,
+  # attaching every platform binary to that release.
+  attach:
+    name: attach to release
+    runs-on: ubuntu-latest
+    needs: build-binaries
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: binaries
+          merge-multiple: true
+      - name: Attach binaries to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: binaries/*

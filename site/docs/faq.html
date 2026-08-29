@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FAQ — PragyaLint Docs</title>
+    <meta name="description" content="Frequently asked questions about PragyaLint." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+        <h1>FAQ</h1>
+        <p class="lead">Common questions, caveats, and limitations.</p>
+
+        <h2 id="dynamic">Does PragyaLint understand dynamic imports?</h2>
+        <p>
+          Yes. It detects <code>importlib.import_module()</code> calls and treats them
+          as references. However, if you build module names from strings at runtime,
+          PragyaLint can't know the target. In those cases use an
+          <strong>entry point</strong> (add the file to <code>entries</code> in your
+          config) to mark it as reachable.
+        </p>
+
+        <h2 id="false-positives">Will it flag my reflection / plugin code?</h2>
+        <p>
+          Possibly. Code loaded via reflection, decorators that register things, or
+          frameworks that scan modules can look "unused" to a static analyzer. This is
+          why exports and locals are <span class="conf conf-medium">medium</span> (or
+          <span class="conf conf-low">low</span>) confidence and are fixed only with an
+          explicit <code>--confidence</code> opt-in. Analysis-only findings never
+          modify your code.
+        </p>
+
+        <h2 id="respect-all">Does it respect <code>__all__</code>?</h2>
+        <p>
+          Yes. Names listed in <code>__all__</code> are treated as exports and are not
+          removed unless you pass <code>--force</code>.
+        </p>
+
+        <h2 id="not-reachable">Why is my <code>utils.py</code> reported as unused?</h2>
+        <p>
+          If no reachable module imports it, it's genuinely unreachable from your entry
+          points. But it might be imported by a module that PragyaLint doesn't consider
+          an entry point, by generated code, or via a dynamic name. Add it to
+          <code>entries</code>, or exclude it, if it's intentional.
+        </p>
+
+        <h2 id="is-it-safe">Is the fixer safe?</h2>
+        <p>
+          The fixer is <strong>explicit</strong> and <strong>confidence-gated</strong>.
+          It removes only unreachable files and unused imports by default. Always run
+          <code>--dry-run</code> first and run your test suite after fixing. For
+          projects with reflection or plugins, be conservative with
+          <code>exports</code> fixes.
+        </p>
+
+        <h2 id="ci-exit">How do I make CI fail on dead code?</h2>
+<pre><code>pragyalint --fail-on high</code></pre>
+        <p>
+          This exits with a non-zero code when any high-confidence finding exists.
+          Combine with <code>--json</code> or <code>--sarif</code> for richer CI
+          integration.
+        </p>
+
+        <h2 id="deps">What are the dependencies?</h2>
+        <p>
+          None at runtime. PragyaLint uses only the Python standard library
+          (<code>ast</code>, <code>pathlib</code>, etc.). Great for locked-down
+          environments.
+        </p>
+
+        <h2 id="py-versions">Which Python versions are supported?</h2>
+        <p>Python 3.9 and newer, including 3.14.</p>
+
+        <h2 id="compare">How does it compare to OptiPrune?</h2>
+        <p>
+          PragyaLint brings OptiPrune's dead-code analysis and confidence-gated
+          fixer model to the Python ecosystem. Where OptiPrune prunes TypeScript and
+          JavaScript, PragyaLint removes dead Python modules, imports, and exports.
+        </p>
+
+        <h2 id="license">Is it free?</h2>
+        <p>
+          Yes. PragyaLint is free software under the
+          <a href="https://github.com/abhinu/pragyalint/blob/main/LICENSE">GPL-3.0-or-later</a>
+          license.
+        </p>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/docs.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>

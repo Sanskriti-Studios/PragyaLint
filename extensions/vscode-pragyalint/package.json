@@ -1,0 +1,80 @@
+{
+  "name": "pragyalint",
+  "displayName": "PragyaLint — Dead-code analyzer",
+  "description": "Find and remove dead code in Python: unreachable modules, unused imports, exports, and functions.",
+  "version": "0.1.0",
+  "publisher": "Abhinu",
+  "license": "GPL-3.0-or-later",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Linters",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:python"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "pragyalint.scan",
+        "title": "PragyaLint: Scan workspace (report dead code)"
+      },
+      {
+        "command": "pragyalint.dryRun",
+        "title": "PragyaLint: Preview fixes (dry-run)"
+      },
+      {
+        "command": "pragyalint.fix",
+        "title": "PragyaLint: Apply safe fixes"
+      },
+      {
+        "command": "pragyalint.cleanAll",
+        "title": "PragyaLint: Scan and remove dead code (all confidence)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "pragyalint.scan",
+        "key": "ctrl+alt+p p",
+        "mac": "cmd+alt+p p"
+      }
+    ],
+    "configuration": {
+      "title": "PragyaLint",
+      "properties": {
+        "pragyalint.binaryPath": {
+          "type": "string",
+          "default": "pragyalint",
+          "description": "Path to the pragyalint executable (or just 'pragyalint' if on PATH)."
+        },
+        "pragyalint.confidence": {
+          "type": "string",
+          "enum": ["high", "medium+", "low+", "all"],
+          "default": "high",
+          "description": "Minimum confidence for fixes."
+        },
+        "pragyalint.showLowConfidence": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show low-confidence findings in the Problems panel."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p .",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/vsce": "^3.9.2",
+    "typescript": "^5.0.0"
+  }
+}

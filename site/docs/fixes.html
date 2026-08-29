@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fixes — PragyaLint Docs</title>
+    <meta name="description" content="PragyaLint's confidence-gated dead-code removal engine." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+        <h1>Fixes</h1>
+        <p class="lead">
+          PragyaLint doesn't just report dead code — its <code>--fix</code> engine can
+          actually remove it. Fixes are <strong>confidence-gated</strong> and
+          <strong>explicit</strong>: nothing is modified unless you ask.
+        </p>
+
+        <h2 id="principle">The safety model</h2>
+        <p>Three guarantees keep the fixer safe:</p>
+        <ul>
+          <li>
+            <strong>Explicit</strong> — the fixer never runs automatically; you must
+            pass <code>--fix</code>.
+          </li>
+          <li>
+            <strong>Confidence-gated</strong> — by default only
+            <span class="conf conf-high">high</span>-confidence findings are fixed.
+            Lower-confidence fixes require an explicit opt-in.
+          </li>
+          <li>
+            <strong>Protected exports</strong> — names listed in
+            <code>__all__</code> (or otherwise re-exported) are never touched without
+            <code>--force</code>.
+          </li>
+        </ul>
+
+        <h2 id="usage">Usage</h2>
+<pre><code># Dry-run: preview changes (modifies nothing)
+pragyalint --fix --dry-run
+
+# Apply high-confidence fixes only (default)
+pragyalint --fix
+
+# Include medium-confidence fixes
+pragyalint --fix exports --confidence medium+
+
+# Include everything, overriding protected exports
+pragyalint --fix all --confidence low+ --force</code></pre>
+
+        <h2 id="targets">Fix types</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Target</th><th>Default</th><th>First fix confidence</th><th>What it removes</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>files</code></td>
+                <td><span class="conf conf-high">high</span></td>
+                <td>on</td>
+                <td>Unreachable module files (never reaches entry points / <code>__init__.py</code>).</td>
+              </tr>
+              <tr>
+                <td><code>imports</code></td>
+                <td><span class="conf conf-high">high</span></td>
+                <td>on</td>
+                <td>Unused imports; trims unused names from multi-name imports (<code>from m import a, b</code> → <code>from m import a</code>).</td>
+              </tr>
+              <tr>
+                <td><code>exports</code></td>
+                <td><span class="conf conf-medium">medium</span></td>
+                <td>off</td>
+                <td>Unused public exports; respects <code>__all__</code>, protected without <code>--force</code>.</td>
+              </tr>
+              <tr>
+                <td><code>locals</code></td>
+                <td><span class="conf conf-medium">medium</span></td>
+                <td>off</td>
+                <td>Unused local functions/classes/variables.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="confidence">Confidence thresholds</h2>
+        <p>
+          The <code>--confidence</code> flag sets the minimum confidence to fix:
+        </p>
+        <ul>
+          <li><code>high</code> — only high (default)</li>
+          <li><code>medium+</code> — medium and high</li>
+          <li><code>low+</code> — low, medium, and high</li>
+          <li><code>all</code> — everything</li>
+        </ul>
+
+        <h2 id="workflow">Recommended workflow</h2>
+<pre><code># 1. Review what would be removed
+pragyalint --fix all --confidence medium+ --dry-run
+
+# 2. Apply just the high-confidence removals
+pragyalint --fix
+
+# 3. Run your test suite
+pytest
+
+# 4. Commit the changes
+git add -A && git commit -m "chore: prune dead code"</code></pre>
+
+        <div class="callout">
+          <strong>Warning:</strong> always review the dry-run output and run your tests
+          after fixing. Medium/low-confidence fixes (exports, locals) can be wrong in
+          code that uses reflection, dynamic dispatch, or plugin registration.
+        </div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="/js/layout.js"></script>
+    <script src="/js/docs.js"></script>
+    <script src="/js/main.js"></script>
+  </body>
+</html>
