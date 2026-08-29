@@ -2,7 +2,7 @@
   "name": "sks-pragyalint",
   "displayName": "PragyaLint — Python Dead-code analyzer",
   "description": "Find and fix dead code in Python: unreachable modules, unused imports, exports, and functions.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "IndianCoder3",
   "license": "GPL-3.0-or-later",
   "icon": "images/icon.png",
