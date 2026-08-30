@@ -73,7 +73,8 @@ python3 -m pip show pragyalint
 python3 -m pip show -f pragyalint | grep pragyalint
 
 # Simplest fix: run it as a module instead of relying on PATH
-python3 -m pragyalint
+python3 -m pragyalint          # Linux/macOS
+py -m pragyalint               # Windows (py launcher)
 
 # Or install with pipx, which manages PATH for you
 pipx install pragyalint
@@ -85,6 +86,12 @@ pragyalint --version</code></pre>
             </p>
 <pre><code>echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.bashrc
 source ~/.bashrc</code></pre>
+            <p>
+              On Windows, <code>pip install --user</code> puts the executable in
+              <code>%APPDATA%\Python\Scripts</code>. Add it to your user
+              <code>PATH</code> and restart the terminal:
+            </p>
+<pre><code>setx PATH "%APPDATA%\Python\Scripts;%PATH%"</code></pre>
           </div>
         </div>
 
@@ -114,7 +121,7 @@ source ~/.bashrc</code></pre>
               </li>
               <li>
                 For the <a href="docs/vscode.html">VS Code extension</a> specifically:
-                set <code>pragyalint.path</code> in your settings, or install
+                set <code>pragyalint.binaryPath</code> in your settings, or install
                 inside the same virtualenv VS Code's Python interpreter is using.
               </li>
               <li>
@@ -138,7 +145,8 @@ source ~/.bashrc</code></pre>
               different one — usually a system Python vs. a virtualenv/conda
               env mismatch. Confirm which interpreter you're actually using:
             </p>
-<pre><code>python3 -c "import sys; print(sys.executable)"
+<pre><code>python3 -c "import sys; print(sys.executable)"   # Linux/macOS
+py -c "import sys; print(sys.executable)"        # Windows
 python3 -m pip show pragyalint   # run with the SAME python3</code></pre>
             <p>
               If they don't match the environment you activated, reinstall with
@@ -166,7 +174,8 @@ python3 -m pip show pragyalint   # run with the SAME python3</code></pre>
               The file uses syntax newer than the Python interpreter running
               PragyaLint (e.g. a <code>match</code> statement parsed under
               Python 3.9). Run PragyaLint with the same Python version your
-              project targets: <code>python3.12 -m pragyalint</code>.
+              project targets: <code>python3.12 -m pragyalint</code> (Windows:
+              <code>py -3.12 -m pragyalint</code>).
             </p>
             <h4>Cause 2 — Genuinely broken file</h4>
             <p>

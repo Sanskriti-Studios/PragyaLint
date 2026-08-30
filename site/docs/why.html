@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Why PragyaLint — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="Why use PragyaLint over vulture, ruff's unused-import checks, or pyflakes for dead-code detection in Python."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Why PragyaLint</h1>
+        <p class="lead">
+          Dead-code detection for Python isn't new. Here's specifically what
+          PragyaLint does differently from the tools you may already have.
+        </p>
+
+        <h2 id="reachability">Reachability, not per-file heuristics</h2>
+        <p>
+          Tools like <code>ruff --select F401</code> or <code>pyflakes</code> catch
+          unused imports <em>within a file</em>, but they don't know whether the
+          file itself is ever imported by anything. <code>vulture</code> goes
+          further with a whole-project scan, but reports a confidence
+          <em>percentage</em> derived from name-usage heuristics rather than an
+          actual reachability proof.
+        </p>
+        <p>
+          PragyaLint builds a real module graph from your
+          <a href="entry-files.html">entry points</a> and asks a structural
+          question: can anything reach this module by following imports? If
+          not, it's HIGH-confidence dead — not a percentage, a fact about your
+          import graph.
+        </p>
+
+        <h2 id="dynamic">Dynamic-dispatch aware by default</h2>
+        <p>
+          Interpreters, plugin systems, and command-dispatch code call functions
+          by name at runtime — <code>getattr(obj, name)</code>, a
+          <code>{"cmd": handler}</code> table, <code>exec</code>/<code>eval</code>.
+          None of that is a plain name reference, so most static analyzers either
+          miss it (false negative — they report nothing, silently missing real
+          usage) or, worse, confidently delete the "unused" function anyway.
+        </p>
+        <p>
+          PragyaLint specifically recognizes dispatch tables and
+          <code>getattr()</code> calls as real usage, and when it detects
+          patterns it <em>can't</em> resolve statically (a computed
+          <code>getattr</code> name, <code>exec</code>, <code>globals()</code>),
+          it downgrades remaining findings project-wide to LOW confidence and
+          refuses to delete anything without <code>--force</code>. See
+          <a href="dynamic-dispatch.html">Dynamic dispatch</a> for the full
+          mechanism.
+        </p>
+
+        <h2 id="tests">Understands your test suite</h2>
+        <p>
+          Pytest discovers <code>test_*.py</code> and <code>conftest.py</code>
+          files by walking the filesystem, not through any import statement in
+          your source. A tool that only looks at the import graph will always
+          see these as "unreachable" and propose deleting your entire test
+          suite. PragyaLint recognizes pytest's discovery convention and treats
+          these files as entry points automatically.
+        </p>
+
+        <h2 id="stdlib">Zero dependencies</h2>
+        <p>
+          PragyaLint is built entirely on the Python standard-library
+          <code>ast</code> module. There's no third-party parser to pin, update,
+          or audit — install it and it works with whatever Python version is
+          running it.
+        </p>
+
+        <h2 id="tradeoffs">What PragyaLint doesn't do</h2>
+        <p>To be fair about the trade-offs:</p>
+        <ul>
+          <li>
+            It doesn't do type inference or cross-package call-graph analysis
+            the way a full type checker would — it works at the level of names
+            and imports, not resolved types.
+          </li>
+          <li>
+            A computed dynamic-dispatch string (e.g.
+            <code>getattr(mod, cmd.lower())</code>) is still undecidable by any
+            static tool, PragyaLint included — the LOW-confidence downgrade and
+            <code>--force</code> gate exist because of this, not instead of it.
+          </li>
+          <li>
+            It analyzes one language (Python) — if your project mixes languages,
+            you'll still want per-language tools alongside it.
+          </li>
+        </ul>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

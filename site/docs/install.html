@@ -75,7 +75,9 @@
 <pre><code>git clone https://github.com/Sanskriti-Studios/PragyaLint
 cd pragyalint
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate               # Linux/macOS
+.venv\Scripts\activate                  # Windows (cmd)
+.venv\Scripts\Activate.ps1              # Windows (PowerShell)
 pip install -e ".[dev]"</code></pre>
 
         <h2 id="verify">Verify the install</h2>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Python API — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="Use PragyaLint as a library: analyze(), apply_fixes(), and the report model."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Python API</h1>
+        <p class="lead">
+          PragyaLint is built as a library with a thin CLI on top. You can call
+          the same pipeline directly — run an analysis, inspect the report, and
+          apply fixes — without shelling out.
+        </p>
+
+        <h2 id="analyze"><code>analyze()</code></h2>
+<pre><code>from pragyalint.analyzer import analyze
+
+report = analyze(root_dir=".", entry=["src/main.py"])</code></pre>
+        <p>Full signature:</p>
+<pre><code>analyze(
+    root_dir: str,
+    entry: list[str] | None = None,
+    ignore: list[str] | None = None,
+    extensions: list[str] | None = None,
+    include: list[str] | None = None,
+    rules: list[str] | None = None,
+    report_unused_exports: bool = True,
+    conventional_entries: bool = True,
+    include_entry_exports: bool = False,
+    ignore_tests: bool = False,
+    detect_cycles: bool = False,
+    fail_on: str | None = None,
+    include_deps: bool = False,
+    hooks: dict | None = None,
+) -&gt; AnalysisReport</code></pre>
+        <p>
+          These mirror the CLI flags exactly (see <a href="cli-commands.html">CLI commands</a>).
+          <code>entry</code>/<code>rules</code>/<code>hooks</code> may be
+          <code>None</code> for "auto"; passing <code>hooks</code> replaces the
+          rule set — see <a href="plugins.html">Plugins</a>.
+        </p>
+
+        <h2 id="report"><code>AnalysisReport</code></h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Field</th><th>Type</th><th>Contents</th></tr></thead>
+            <tbody>
+              <tr><td><code>root_dir</code></td><td><code>str</code></td><td>Analysis root.</td></tr>
+              <tr><td><code>summary</code></td><td><code>Summary</code></td><td><code>total_files</code>, <code>reachable_files</code>, <code>findings</code>, <code>by_rule</code>, <code>by_confidence</code>.</td></tr>
+              <tr><td><code>findings</code></td><td><code>list[Finding]</code></td><td>Every rule finding — see below.</td></tr>
+              <tr><td><code>modules</code></td><td><code>list[ModuleRecord]</code></td><td>Per-module path, name, package/entry flags, exports, imports, reachable.</td></tr>
+              <tr><td><code>entry_points</code></td><td><code>list[str]</code></td><td>Module names treated as entries.</td></tr>
+              <tr><td><code>cycles</code></td><td><code>list[list[str]]</code></td><td>Import cycles (populated only with <code>detect_cycles=True</code>).</td></tr>
+              <tr><td><code>deps</code></td><td><code>dict</code></td><td>Reserved dependency map.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p><code>report.to_dict()</code> produces the same structure as <code>pragyalint --json</code>.</p>
+
+        <h2 id="finding"><code>Finding</code></h2>
+<pre><code>Finding(
+    rule: str,                 # unused_file / unused_import / unused_export / unused_local / cycle
+    confidence: str,           # "high" | "medium" | "low"
+    message: str,
+    file: str | None = None,
+    line: int | None = None,
+    column: int | None = None,
+    extra: dict | None = None, # rule-specific metadata, e.g. the unused name
+)</code></pre>
+        <p><code>Confidence</code> provides the constants (<code>HIGH</code>, <code>MEDIUM</code>, <code>LOW</code>) and parsers (<code>parse()</code>, <code>parse_min()</code>).</p>
+
+        <h2 id="apply-fixes"><code>apply_fixes()</code></h2>
+<pre><code>from pragyalint.fixer import apply_fixes
+
+result = apply_fixes(
+    report,
+    targets=["files", "imports", "exports"],
+    min_confidence="high",     # "high" | "medium" | "low" (from --confidence)
+    dry_run=True,              # preview only
+    force=False,               # allow unsafe edits
+)</code></pre>
+        <p>
+          Returns a <code>FixResult</code> with three lists:
+          <code>applied</code>, <code>dry_run</code>, and <code>skipped</code>.
+          The same confidence gating and safety checks that protect the CLI
+          apply here (see <a href="fixes.html">Fixes &amp; --fix</a>).
+        </p>
+
+        <h2 id="reporters">Reporters</h2>
+<pre><code>from pragyalint.reporters import format_terminal, format_json, format_sarif
+
+print(format_terminal(report))
+print(format_json(report))
+print(format_sarif(report))</code></pre>
+
+        <h2 id="example">Complete example</h2>
+<pre><code>from pragyalint.analyzer import analyze
+from pragyalint.fixer import apply_fixes
+
+report = analyze(root_dir="src", detect_cycles=True)
+
+for finding in report.findings:
+    print(f"{finding.rule}	{finding.confidence}	{finding.line}	{finding.message}")
+
+# Preview fixing dead imports
+result = apply_fixes(report, targets=["imports"], min_confidence="high", dry_run=True)
+for planned in result.dry_run:
+    print("would:", planned)</code></pre>
+
+        <div class="callout">
+          <strong>Stability:</strong> the API is alpha. <code>analyze()</code>,
+          <code>apply_fixes()</code>, and the report model are the supported
+          surface; details like the <code>hooks</code> wiring may evolve.
+        </div>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

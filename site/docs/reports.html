@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reports — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="Terminal, JSON, and SARIF output formats for PragyaLint reports."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Reports</h1>
+        <p class="lead">
+          PragyaLint's findings render three ways: human-readable terminal
+          output by default, JSON with <code>--json</code>, and SARIF with
+          <code>--sarif</code>. Pick one per run — JSON and SARIF are
+          mutually exclusive output modes.
+        </p>
+
+        <h2 id="terminal">Terminal (default)</h2>
+        <p>Findings are grouped by file, each with a location, a confidence marker, and a message:</p>
+<pre><code>$ pragyalint
+
+./src/orphan.py
+  &#10008; [HIGH  ] module 'orphan' is not reachable from any entry point
+
+./src/utils/helper.py
+  &#9888; [MEDIUM] export 'legacy_fn' of module 'utils.helper' is never imported
+
+./src/app.py
+  &#10008; [HIGH  ] import 'os' is never used
+
+3 findings in 12 files (11 reachable).
+  2 high | 1 medium</code></pre>
+        <p>Markers and colors by confidence:</p>
+        <ul>
+          <li><span class="conf conf-high">high</span> — red <code>&#10008;</code> (✖)</li>
+          <li><span class="conf conf-medium">medium</span> — yellow <code>&#9888;</code> (⚠)</li>
+          <li><span class="conf conf-low">low</span> — cyan <code>&#8505;</code> (ℹ)</li>
+        </ul>
+        <p>
+          Pass <code>--no-color</code> to disable ANSI colors (useful for logs
+          and diffs). When there's nothing to report, PragyaLint prints
+          <code>No dead code found.</code>
+        </p>
+
+        <h2 id="json">JSON</h2>
+        <p><code>--json</code> prints the full structured report. Top-level keys:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Key</th><th>Contents</th></tr></thead>
+            <tbody>
+              <tr><td><code>root_dir</code></td><td>The analysis root directory.</td></tr>
+              <tr><td><code>summary</code></td><td><code>total_files</code>, <code>reachable_files</code>, <code>findings</code>, <code>by_rule</code>, <code>by_confidence</code>.</td></tr>
+              <tr><td><code>findings</code></td><td>Objects with <code>rule</code>, <code>confidence</code>, <code>message</code>, <code>file</code>, <code>line</code>, <code>column</code>, and <code>extra</code> (rule-specific metadata like the unused name).</td></tr>
+              <tr><td><code>modules</code></td><td>Per-module records: <code>path</code>, <code>module_name</code>, <code>is_package</code>, <code>is_entry</code>, <code>exports</code>, <code>imports</code>, <code>reachable</code>.</td></tr>
+              <tr><td><code>entry_points</code></td><td>Module names treated as entries.</td></tr>
+              <tr><td><code>cycles</code></td><td>Detected import cycles (empty unless <code>--cycles</code>).</td></tr>
+              <tr><td><code>deps</code></td><td>Reserved dependency map.</td></tr>
+            </tbody>
+          </table>
+        </div>
+<pre><code>pragyalint --json</code></pre>
+        <p>Truncated example:</p>
+<pre><code>{
+  "root_dir": "/home/you/project",
+  "summary": {
+    "total_files": 12,
+    "reachable_files": 11,
+    "findings": 2,
+    "by_rule": {"unused_file": 1, "unused_import": 1},
+    "by_confidence": {"high": 2}
+  },
+  "findings": [
+    {
+      "rule": "unused_file",
+      "confidence": "high",
+      "message": "module 'orphan' is not reachable from any entry point",
+      "file": "/home/you/project/src/orphan.py",
+      "line": null,
+      "column": null,
+      "extra": {"module": "orphan"}
+    }
+  ],
+  "entry_points": ["main"],
+  "cycles": []
+}</code></pre>
+        <p>Feed it to <code>jq</code> for quick triage:</p>
+<pre><code>pragyalint --json | jq -r '.findings[] | [.rule, .confidence, (.file | split("/") | last)] | @tsv'</code></pre>
+
+        <h2 id="sarif">SARIF</h2>
+        <p><code>--sarif</code> emits a SARIF 2.1.0 document for Code Scanning tools:</p>
+<pre><code>pragyalint --sarif &gt; pragyalint.sarif</code></pre>
+        <ul>
+          <li>Confidence maps to SARIF levels: <span class="conf conf-high">high</span> &rarr; <code>error</code>, <span class="conf conf-medium">medium</span> &rarr; <code>warning</code>, <span class="conf conf-low">low</span> &rarr; <code>note</code>.</li>
+          <li>Each result carries the rule name, message, and a physical location (URI + start line/column) when the finding has one.</li>
+          <li>Rules are declared under <code>runs[0].tool.driver</code>.</li>
+        </ul>
+        <p>
+          Combine with the GitHub Code Scanning upload action to surface
+          findings in pull requests — see <a href="automation.html">CI / automation</a>.
+        </p>
+
+        <h2 id="note">A note on <code>--fix</code> alongside reports</h2>
+        <p>
+          Fixes run as their own pass. With <code>--dry-run</code> the plan is
+          printed first, then the report follows; nothing is written to disk.
+          See <a href="fixes.html">Fixes &amp; --fix</a>.
+        </p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

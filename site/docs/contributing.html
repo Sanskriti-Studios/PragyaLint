@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Contributing — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="Dev setup, running tests, and opening a pull request for PragyaLint."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Contributing</h1>
+        <p class="lead">
+          PragyaLint is a small, dependency-free codebase — the analysis engine,
+          the fixer, and the finders all live in one package with a tidy test
+          suite. Here's how to get set up and what the maintainers expect.
+        </p>
+
+        <h2 id="setup">Dev setup</h2>
+<pre><code>git clone https://github.com/Sanskriti-Studios/PragyaLint
+cd PragyaLint
+python -m venv .venv
+source .venv/bin/activate               # Linux/macOS
+.venv\Scripts\activate                  # Windows (cmd)
+.venv\Scripts\Activate.ps1              # Windows (PowerShell)
+pip install -e ".[dev]"
+pytest -q</code></pre>
+        <p>Requires Python 3.11 or newer. The <code>dev</code> extra is just pytest — the package itself stays zero-dependency.</p>
+
+        <h2 id="layout">Repository layout</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Path</th><th>What it's for</th></tr></thead>
+            <tbody>
+              <tr><td><code>pragyalint/</code></td><td>The package.</td></tr>
+              <tr><td><code>pragyalint/analyzer.py</code></td><td>Pipeline: graph, reachability, then finder passes.</td></tr>
+              <tr><td><code>pragyalint/graph.py</code></td><td>Discovery, AST parsing, imports/exports, cycle detection.</td></tr>
+              <tr><td><code>pragyalint/finders/</code></td><td>One file per rule (<code>unused_*</code>, <code>cycles</code>).</td></tr>
+              <tr><td><code>pragyalint/fixer.py</code></td><td>Opt-in, confidence-gated edits.</td></tr>
+              <tr><td><code>pragyalint/reporters/</code></td><td>Terminal, JSON, and SARIF formatting.</td></tr>
+              <tr><td><code>pragyalint/dynamic.py</code></td><td>Dynamic-dispatch heuristics and the keep pragma.</td></tr>
+              <tr><td><code>pragyalint/config.py</code></td><td>Config discovery and defaults.</td></tr>
+              <tr><td><code>tests/</code></td><td>pytest suite — one module per area (<code>test_graph</code>, <code>test_exports</code>, <code>test_fixer</code>, …).</td></tr>
+              <tr><td><code>site/</code></td><td>This static documentation site.</td></tr>
+              <tr><td><code>extensions/vscode-pragyalint/</code></td><td>VS Code extension source.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="tests">Running &amp; adding tests</h2>
+<pre><code>pytest -q                         # whole suite
+pytest tests/test_graph.py        # a single module
+pytest -k "exports or dynamic"    # by keyword</code></pre>
+        <p>
+          New rules or behaviors need tests that build a tiny fixture tree in a
+          temp directory and assert on the emitted findings — follow the
+          existing test style. The repo's CI gate also runs a self-analysis:
+        </p>
+<pre><code>pragyalint --fail-on high --include pragyalint</code></pre>
+
+        <h2 id="ci">CI workflows</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Workflow</th><th>Runs</th></tr></thead>
+            <tbody>
+              <tr><td><code>tests.yml</code></td><td>pytest on Python 3.11/3.12/3.13 plus the self-analysis gate, on push and PR.</td></tr>
+              <tr><td><code>pages.yml</code></td><td>Deploys <code>site/</code> to GitHub Pages on push to main.</td></tr>
+              <tr><td><code>publish.yml</code></td><td>Builds and publishes to PyPI and GitHub Releases; triggers on a <code>release:</code> commit.</td></tr>
+              <tr><td><code>bins.yml</code></td><td>Builds standalone Windows/Linux/macOS binaries with PyInstaller and attaches them to releases.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="conventions">Conventions</h2>
+        <ul>
+          <li>Standard library only — no new runtime dependencies.</li>
+          <li>Python 3.11+ syntax and type annotations.</li>
+          <li>Docstrings on public functions; rule logic lives in <code>finders/</code>.</li>
+          <li>Docs: if you change behavior, update the matching page in <code>site/docs/</code> and its entry in <code>site/js/docs-nav.js</code>.</li>
+          <li>Add a bullet to <code>CHANGELOG.md</code> for user-visible changes.</li>
+        </ul>
+
+        <h2 id="pr">Opening a PR</h2>
+        <ul>
+          <li>Open an issue first for anything non-trivial so the plan is agreed before the code.</li>
+          <li>Describe the bug/feature, cite a reproduction, and attach <code>pragyalint -v</code> output when relevant.</li>
+          <li>Use conventional commit prefixes — <code>fix:</code>, <code>feat:</code>, <code>chore:</code>, <code>docs:</code> — matching the existing history.</li>
+          <li>Make sure tests and the self-analysis gate pass locally before pushing.</li>
+        </ul>
+        <p>
+          Issues and PRs:
+          <a href="https://github.com/Sanskriti-Studios/PragyaLint/issues" target="_blank" rel="noopener">github.com/Sanskriti-Studios/PragyaLint/issues</a>
+        </p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

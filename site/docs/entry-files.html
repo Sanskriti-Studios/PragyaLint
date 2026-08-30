@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Entry files — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="How PragyaLint determines entry points: conventional entries, the --entry flag, and pytest test-file discovery."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Entry files</h1>
+        <p class="lead">
+          An entry point is a file PragyaLint assumes gets run or imported from
+          outside your codebase — the starting point for reachability analysis.
+          Everything reachable from an entry point is "alive"; everything else
+          is a candidate for deletion.
+        </p>
+
+        <h2 id="conventional">Conventional entries</h2>
+        <p>
+          With no <code>--entry</code> flag, PragyaLint treats these as entries
+          automatically:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Pattern</th><th>Why</th></tr></thead>
+            <tbody>
+              <tr><td><code>__main__.py</code></td><td>Runnable as a package (<code>python -m yourpkg</code>).</td></tr>
+              <tr><td><code>main.py</code></td><td>Common script entry-point filename.</td></tr>
+              <tr><td><code>app.py</code></td><td>Common web-app entry-point filename.</td></tr>
+              <tr><td><code>cli.py</code></td><td>Common CLI entry-point filename.</td></tr>
+              <tr><td><code>setup.py</code></td><td>Package build script, invoked by <code>pip</code>/<code>setuptools</code> directly.</td></tr>
+              <tr><td>Root-level <code>__init__.py</code></td><td>Package's public surface.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Disable this with <code>--no-conventional-entries</code> if you want
+          to specify entries explicitly and nothing else.
+        </p>
+
+        <h2 id="explicit">Explicit entries</h2>
+        <p>Pass one or more entry points explicitly with <code>--entry</code>:</p>
+<pre><code>pragyalint --entry src/server.py --entry src/worker.py
+pragyalint --entry src.server   # module-name form also works</code></pre>
+        <p>
+          When <code>--entry</code> is given, it's used <em>in addition to</em>
+          test-file discovery (below) — not instead of it.
+        </p>
+
+        <h2 id="tests">Test files are always entries</h2>
+        <div class="callout">
+          <strong>This applies regardless of <code>--entry</code>.</strong>
+          Pytest (and unittest discovery) import <code>conftest.py</code> and
+          <code>test_*.py</code>/<code>*_test.py</code> files themselves, by
+          walking the filesystem — not through any <code>import</code>
+          statement in your source. A pure import-graph reachability check
+          would always see these as unreachable and try to delete your whole
+          test suite. PragyaLint recognizes this convention and treats matching
+          files as entries automatically.
+        </div>
+        <p>Matched by any of:</p>
+        <ul>
+          <li>Filename <code>conftest.py</code></li>
+          <li>Filename starting with <code>test_</code> or ending in <code>_test.py</code></li>
+          <li>Any file inside a <code>tests/</code>, <code>test/</code>, or <code>__tests__/</code> directory</li>
+        </ul>
+        <p>
+          Top-level definitions inside entry files (including test files)
+          aren't flagged by <code>unused_local</code>/<code>unused_export</code>
+          by default either — pytest calls <code>test_foo</code> functions by
+          name-convention, not by reference, so they'd otherwise show up as
+          "defined but never used" too. Pass <code>--include-entry-exports</code>
+          if you specifically want entry-file definitions checked anyway.
+        </p>
+
+        <h2 id="package-init">Non-root <code>__init__.py</code> files</h2>
+        <p>
+          Only the <em>root</em> <code>__init__.py</code> counts as a
+          conventional entry. Package <code>__init__.py</code> files deeper in
+          your tree are analyzed normally — if nothing imports that
+          subpackage, it's still flagged as unreachable.
+        </p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

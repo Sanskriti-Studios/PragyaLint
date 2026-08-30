@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Confidence levels — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="How PragyaLint's HIGH/MEDIUM/LOW confidence levels work, and what --fail-on and --confidence actually gate."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Confidence levels</h1>
+        <p class="lead">
+          Every finding carries a confidence level. It's not a percentage or a
+          machine-learning score — it reflects how certain the underlying
+          static-analysis claim is.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>Means</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="conf conf-high">high</span></td>
+                <td>Structurally certain — provable from the import graph alone.</td>
+                <td>A module nothing imports; an imported name never referenced in that file.</td>
+              </tr>
+              <tr>
+                <td><span class="conf conf-medium">medium</span></td>
+                <td>Strongly implied, but static analysis can't rule out an external caller (a library's public API) or an unusual internal pattern.</td>
+                <td>An exported function no module in this project imports.</td>
+              </tr>
+              <tr>
+                <td><span class="conf conf-low">low</span></td>
+                <td>Heuristic, or downgraded because the project uses a pattern (dynamic dispatch, import cycles) that undermines the analysis's certainty.</td>
+                <td>A dead-looking constant assignment; any finding in a project that also uses <code>exec</code>/<code>eval</code>/<code>getattr</code>/<code>globals()</code> somewhere.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="two-gates">Two different gates use confidence</h2>
+
+        <h3><code>--fail-on</code> — for CI</h3>
+        <p>
+          Controls what makes the process exit non-zero. Findings are still
+          reported below this threshold; they just don't fail the run.
+        </p>
+<pre><code>pragyalint --fail-on high     # only HIGH findings fail CI (default: never fails)
+pragyalint --fail-on medium   # MEDIUM and HIGH fail CI</code></pre>
+
+        <h3><code>--confidence</code> — for <code>--fix</code></h3>
+        <p>
+          Controls which findings the fixer is allowed to actually delete.
+          Plain <code>--fix</code> only touches HIGH-confidence findings.
+        </p>
+<pre><code>pragyalint --fix                          # HIGH only
+pragyalint --fix --confidence medium+     # MEDIUM and HIGH
+pragyalint --fix --confidence all         # everything, including LOW</code></pre>
+        <div class="callout warn">
+          <strong>Even at <code>--confidence all</code></strong>, the fixer
+          still won't delete definitions from a project where dynamic dispatch
+          was detected unless you also pass <code>--force</code>. Confidence
+          and the dynamic-dispatch safety gate are independent checks — see
+          <a href="dynamic-dispatch.html">Dynamic dispatch</a>.
+        </div>
+
+        <h2 id="why-low-not-deleted">Why LOW findings still show up if they're never auto-fixed</h2>
+        <p>
+          A LOW-confidence finding is still useful to <em>read</em> — it's
+          telling you "this looks dead, but I found something in your project
+          that makes me unsure." Reviewing it yourself is exactly the workflow
+          it's designed for; it's just not going to delete anything for you
+          without an explicit override.
+        </p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

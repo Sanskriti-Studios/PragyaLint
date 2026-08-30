@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CI / automation — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="Run PragyaLint in CI: GitHub Actions, GitLab CI, pre-commit, and Code Scanning."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>CI / automation</h1>
+        <p class="lead">
+          The two things PragyaLint gives CI are a <em>gate</em> — exit code 1
+          when findings meet <code>--fail-on</code> — and a <em>feed</em> for
+          other tools: JSON or SARIF. Wire either (or both) into your pipeline.
+        </p>
+
+        <h2 id="github-actions">GitHub Actions</h2>
+        <p>A minimal job that gates every PR on high-confidence dead code:</p>
+<pre><code>name: quality
+on: [pull_request]
+jobs:
+  dead-code:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pragyalint
+      - run: pragyalint --fail-on high</code></pre>
+
+        <h3>Code Scanning with SARIF</h3>
+        <p>Emit SARIF and upload it so findings appear as Code Scanning alerts on PRs:</p>
+<pre><code>      - run: pragyalint --sarif &gt; pragyalint.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: pragyalint.sarif</code></pre>
+
+        <h3>Self-analysis gate</h3>
+        <p>PragyaLint's own CI runs this — it proves the codebase being shipped is clean:</p>
+<pre><code>pragyalint --fail-on high --include pragyalint</code></pre>
+
+        <h2 id="gitlab">GitLab CI</h2>
+<pre><code>dead-code:
+  image: python:3.12
+  before_script:
+    - pip install pragyalint
+  script:
+    - pragyalint --fail-on medium</code></pre>
+        <p>
+          With <code>--fail-on medium</code>, any MEDIUM or HIGH finding makes
+          the job fail. Use <code>--json</code> and <code>artifacts:reports</code>
+          if you want structured output in the pipeline.
+        </p>
+
+        <h2 id="precommit">pre-commit</h2>
+        <p>
+          PragyaLint currently ships no <code>.pre-commit-hooks.yaml</code>, so
+          use a <code>repo: local</code> hook that calls the installed binary:
+        </p>
+<pre><code>repos:
+  - repo: local
+    hooks:
+      - id: pragyalint
+        name: pragyalint dead-code check
+        entry: pragyalint --fail-on high
+        language: system
+        pass_filenames: false</code></pre>
+        <p>
+          <code>pass_filenames: false</code> matters — dead-code analysis is
+          whole-project, not per-file.
+        </p>
+
+        <h2 id="tips">Tips</h2>
+        <ul>
+          <li>
+            <strong>Install, don't assume.</strong> Pin a version in CI:
+            <code>pip install "pragyalint==0.1.*"</code>.
+          </li>
+          <li>
+            <strong>Narrow the scan.</strong> Monorepos: add
+            <code>--include</code>/<code>--ignore</code> to keep the job fast
+            and relevant.
+          </li>
+          <li>
+            <strong>Start permissive.</strong> First run with
+            <code>--fail-on high</code> only; graduate to MEDIUM once HIGH is
+            clean.
+          </li>
+          <li>
+            <strong>Exit codes</strong> — 0 is clean, 1 means findings at/above
+            the threshold. CI treats the non-zero as a failure.
+          </li>
+        </ul>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

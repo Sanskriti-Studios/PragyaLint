@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Analysis rules — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="The five PragyaLint rules: unused_file, unused_import, unused_export, unused_local, and cycle — what each checks and its confidence level."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Analysis rules</h1>
+        <p class="lead">
+          PragyaLint runs five independent rules. Each finding is tagged with
+          the rule that produced it, so you can filter with
+          <code>--rules</code> or read <code>rule</code> in JSON output.
+        </p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Rule</th><th>Checks</th><th>Confidence</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>unused_file</code></td>
+                <td>Module unreachable from any entry point.</td>
+                <td><span class="conf conf-high">high</span></td>
+              </tr>
+              <tr>
+                <td><code>unused_import</code></td>
+                <td>An imported name (or a single name inside a multi-name import) never referenced in that file.</td>
+                <td><span class="conf conf-high">high</span></td>
+              </tr>
+              <tr>
+                <td><code>unused_export</code></td>
+                <td>A top-level function/class/variable no other module ever imports.</td>
+                <td><span class="conf conf-medium">medium</span> (or <span class="conf conf-low">low</span> if dynamic dispatch detected)</td>
+              </tr>
+              <tr>
+                <td><code>unused_local</code></td>
+                <td>A top-level definition referenced nowhere in the project at all — not even within its own file.</td>
+                <td><span class="conf conf-medium">medium</span> (or <span class="conf conf-low">low</span> if dynamic dispatch detected)</td>
+              </tr>
+              <tr>
+                <td><code>cycle</code></td>
+                <td>A circular import between modules (only run with <code>--cycles</code>).</td>
+                <td><span class="conf conf-low">low</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="export-vs-local">unused_export vs. unused_local</h2>
+        <p>
+          These two look similar but check different things, and a definition
+          can trigger one, both, or neither:
+        </p>
+        <ul>
+          <li>
+            <code>unused_export</code> asks: <em>does any other module import
+            this?</em> A function only ever called from within its own file
+            (a private helper, effectively) will trigger this even though it's
+            perfectly alive.
+          </li>
+          <li>
+            <code>unused_local</code> asks: <em>is this referenced anywhere at
+            all, including its own file?</em> This is the stronger claim — a
+            <code>unused_local</code> finding means the definition is
+            genuinely never called.
+          </li>
+        </ul>
+
+        <h2 id="exemptions">What's exempt from unused_export / unused_local</h2>
+        <ul>
+          <li>Names starting with <code>_</code> (treated as intentionally private).</li>
+          <li>Names listed in an explicit <code>__all__</code>.</li>
+          <li>Names used as values in a dict/list/tuple/set literal (dispatch tables) — see <a href="dynamic-dispatch.html">Dynamic dispatch</a>.</li>
+          <li>Names passed to <code>getattr(obj, "literal_name")</code> anywhere in the project.</li>
+          <li>Top-level definitions in entry files (including test files), unless <code>--include-entry-exports</code> is passed.</li>
+          <li>A definition marked with a trailing or preceding <code># pragyalint: keep</code> comment.</li>
+        </ul>
+
+        <h2 id="restricting">Restricting which rules run</h2>
+<pre><code># Only check for unused files and imports (fastest, highest-confidence pass)
+pragyalint --rules unused_file unused_import
+
+# Add cycle detection (off by default)
+pragyalint --cycles</code></pre>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

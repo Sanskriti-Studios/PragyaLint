@@ -30,7 +30,7 @@
         { href: "docs/config.html", label: "Configuration", icon: "fa-solid fa-sliders", desc: "pyproject.toml, pragyalint.toml, and precedence." },
         { href: "docs/fixes.html", label: "Fixes & --fix", icon: "fa-solid fa-wrench", desc: "What each fix target does, and how to preview safely." },
         { href: "docs/reports.html", label: "Reports", icon: "fa-solid fa-file-lines", desc: "Terminal, JSON, and SARIF output formats." },
-        { href: "docs/cache.html", label: "Cache", icon: "fa-solid fa-database", desc: "How re-scans get faster, and how to bust the cache." },
+        { href: "docs/cache.html", label: "Cache", icon: "fa-solid fa-database", desc: "What PragyaLint caches (and what it doesn't), and how to keep scans fast." },
       ],
     },
     {

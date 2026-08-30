@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>VS Code extension — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="PragyaLint for Visual Studio Code: commands, settings, and inline dead-code diagnostics."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>VS Code extension</h1>
+        <p class="lead">
+          <strong>PragyaLint for Visual Studio Code</strong> brings dead-code
+          diagnostics into the editor. It runs <code>pragyalint --json</code>
+          on your workspace and publishes findings to the Problems panel,
+          colored by confidence, then lets you preview and apply fixes without
+          leaving the editor.
+        </p>
+
+        <h2 id="install">Install</h2>
+<pre><code>code --install-extension IndianCoder3.sks-pragyalint</code></pre>
+        <p>Or open the Extensions panel (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>X</kbd>) and search for <strong>PragyaLint</strong>.</p>
+        <p>
+          <a href="https://marketplace.visualstudio.com/items?itemName=IndianCoder3.sks-pragyalint"
+             target="_blank" rel="noopener">marketplace.visualstudio.com/…IndianCoder3.sks-pragyalint</a>
+        </p>
+
+        <h2 id="requirements">Requirements</h2>
+        <p>
+          The extension shells out to the <code>pragyalint</code> CLI, so it
+          must be installed and reachable — <a href="install.html">install the
+          CLI</a> with <code>pip install pragyalint</code> or pipx first. If the
+          process that launches VS Code can't see it on its <code>PATH</code>,
+          set <code>pragyalint.binaryPath</code> to the absolute path (see
+          <a href="#settings">settings</a> and
+          <a href="errors.html">ENOENT troubleshooting</a>).
+        </p>
+
+        <h2 id="commands">Commands</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+            <tbody>
+              <tr><td><code>PragyaLint: Scan workspace</code></td><td>Runs <code>pragyalint --json</code> and reports dead code into the Problems panel.</td></tr>
+              <tr><td><code>PragyaLint: Preview fixes (dry-run)</code></td><td>Runs <code>--fix --dry-run</code> and opens the plan in a read-only document.</td></tr>
+              <tr><td><code>PragyaLint: Apply safe fixes</code></td><td>Applies high-confidence fixes.</td></tr>
+              <tr><td><code>PragyaLint: Scan and remove dead code (all confidence)</code></td><td>Full prune: <code>--fix --confidence low+ --force</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Problems are colored by confidence — error (high), warning (medium),
+          info (low) — matching the CLI report.
+        </p>
+
+        <h2 id="settings">Settings</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Setting</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>pragyalint.binaryPath</code></td><td><code>pragyalint</code></td><td>Executable to run. Set to an absolute path when the CLI isn't on the editor's <code>PATH</code>.</td></tr>
+              <tr><td><code>pragyalint.confidence</code></td><td><code>high</code></td><td>Minimum confidence for fixes (<code>high</code>, <code>medium+</code>, <code>low+</code>, <code>all</code>).</td></tr>
+              <tr><td><code>pragyalint.showLowConfidence</code></td><td><code>true</code></td><td>Show or hide low-confidence findings in the Problems panel.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="troubleshooting">Troubleshooting</h2>
+        <ul>
+          <li>
+            <strong>ENOENT / "cannot find pragyalint"</strong> — the CLI isn't on
+            the environment's <code>PATH</code>. Find it with
+            <code>which pragyalint</code> (Windows: <code>where pragyalint</code>)
+            and set <code>pragyalint.binaryPath</code>.
+          </li>
+          <li>
+            <strong>Wrong interpreter</strong> — install the CLI into the same
+            virtualenv VS Code's Python interpreter is using.
+          </li>
+          <li><strong>Stale results</strong> — re-run <em>Scan workspace</em>; nothing is cached between runs.</li>
+        </ul>
+        <p>Full diagnosis guidance: <a href="errors.html">Errors &amp; troubleshooting</a>.</p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
