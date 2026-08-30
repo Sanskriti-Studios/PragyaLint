@@ -71,8 +71,19 @@ jobs:
           print(f"tag=v{version}")
           PY
 
-      - name: Publish to VS Code Marketplace (requires VSCE_PAT secret)
-        if: ${{ secrets.VSCE_PAT != '' }}
+      - name: Check for VSCE_PAT
+        id: check-pat
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          if [ -n "$VSCE_PAT" ]; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to VS Code Marketplace
+        if: steps.check-pat.outputs.publish == 'true'
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: npx vsce publish --no-git-tag-version -p "$VSCE_PAT"
