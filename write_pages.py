@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, ".")
-from gen_page import write
+from gen_page import write, write_robots, write_sitemap
 
 D = "site/docs"
 
@@ -1338,4 +1338,6 @@ write(f"{D}/source.html", "Source & releases", "Repository layout, releases, and
         </p>
 ''')
 
+write_sitemap()
+write_robots()
 print("all batches done")

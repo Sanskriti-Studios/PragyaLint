@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://prgl.ic3cool.int.yt/sitemap.xml

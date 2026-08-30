@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img" aria-label="PragyaLint — dead-code analyzer for Python">
+  <defs>
+    <radialGradient id="glow" cx="18%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#3a2a78"/>
+      <stop offset="55%" stop-color="#191238"/>
+      <stop offset="100%" stop-color="#0d0b1e"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- faint chain ring motif on the right -->
+  <g opacity="0.14">
+    <circle cx="985" cy="315" r="250" fill="none" stroke="#7b52ee" stroke-width="22"/>
+    <circle cx="985" cy="315" r="235" fill="none" stroke="#00d2ff" stroke-width="7" stroke-dasharray="16 10"/>
+    <circle cx="985" cy="315" r="120" fill="none" stroke="#00d2ff" stroke-width="7"/>
+    <circle cx="985" cy="315" r="105" fill="none" stroke="#7b52ee" stroke-width="20"/>
+    <line x1="985" y1="185" x2="985" y2="445" stroke="#9d72ff" stroke-width="18" stroke-linecap="round"/>
+    <line x1="850" y1="315" x2="1120" y2="315" stroke="#9d72ff" stroke-width="18" stroke-linecap="round"/>
+  </g>
+
+  <rect x="92" y="66" width="88" height="88" rx="20" fill="#0d0b1e" stroke="#7b52ee" stroke-width="4"/>
+  <circle cx="136" cy="110" r="26" fill="none" stroke="#00d2ff" stroke-width="7"/>
+  <circle cx="136" cy="110" r="9" fill="#00d2ff"/>
+
+  <text x="196" y="128" fill="#f2f0ff" font-family="'DejaVu Sans','Noto Sans',sans-serif" font-weight="bold" font-size="56" letter-spacing="1">Pragya</text>
+  <text x="430" y="128" fill="#9d72ff" font-family="'DejaVu Sans','Noto Sans',sans-serif" font-weight="bold" font-size="56" letter-spacing="1">Lint</text>
+
+  <text x="92" y="330" fill="#cfc9ef" font-family="'DejaVu Sans','Noto Sans',sans-serif" font-weight="bold" font-size="54">Dead-code analyzer for Python</text>
+  <text x="92" y="400" fill="#9f96c9" font-family="'DejaVu Sans','Noto Sans',sans-serif" font-size="30">Unused modules · imports · exports · functions — removed safely</text>
+
+  <rect x="92" y="452" width="420" height="62" rx="31" fill="#171232"/>
+  <text x="122" y="493" fill="#7b52ee" font-family="'DejaVu Sans','Noto Sans',sans-serif" font-weight="bold" font-size="25">pip install pragyalint</text>
+  <text x="572" y="493" fill="#00d2ff" font-family="'DejaVu Sans','Noto Sans',sans-serif" font-size="24">CI-ready · zero dependencies</text>
+
+  <line x1="92" y1="548" x2="1108" y2="548" stroke="#2c2452" stroke-width="2"/>
+  <text x="92" y="588" fill="#6f6793" font-family="'DejaVu Sans','Noto Sans',sans-serif" font-size="20">prgl.ic3cool.int.yt</text>
+  <text x="1108" y="588" text-anchor="end" fill="#6f6793" font-family="'DejaVu Sans','Noto Sans',sans-serif" font-size="20">Windows · macOS · Linux · GPL-3.0-or-later</text>
+</svg>
