@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CLI commands — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="The full pragyalint flag reference: analysis, report, and fix options, plus exit codes."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>CLI commands</h1>
+        <p class="lead">
+          PragyaLint is a single flag-based CLI — there are no subcommands.
+          Everything is either an analysis option, a report option, or a fix
+          option on the <code>pragyalint</code> command. This page is the
+          reference for all of them.
+        </p>
+
+        <h2 id="basics">Basics</h2>
+<pre><code>pragyalint                # analyze the current directory
+pragyalint --help         # full option list
+pragyalint --version      # print version
+python3 -m pragyalint     # run as a module (works even when not on PATH)</code></pre>
+
+        <h2 id="analysis">Analysis options</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>-r, --root-dir &lt;path&gt;</code></td><td>current directory</td><td>Root directory of the project.</td></tr>
+              <tr><td><code>-e, --entry &lt;module...&gt;</code></td><td>auto-detect</td><td>Entry-point modules, globs, or file paths. Space-separated or repeated; see <a href="entry-files.html">Entry files</a>.</td></tr>
+              <tr><td><code>-i, --ignore &lt;patterns...&gt;</code></td><td><code>[]</code></td><td>Glob patterns to ignore while scanning.</td></tr>
+              <tr><td><code>-x, --extensions &lt;exts...&gt;</code></td><td><code>.py</code></td><td>File extensions to analyze.</td></tr>
+              <tr><td><code>--include &lt;paths...&gt;</code></td><td><code>[]</code></td><td>Only analyze files under these paths.</td></tr>
+              <tr><td><code>--rules &lt;rules...&gt;</code></td><td>all</td><td>Restrict analysis to listed rules: <code>unused_file</code>, <code>unused_export</code>, <code>unused_import</code>, <code>unused_local</code>, <code>cycle</code>.</td></tr>
+              <tr><td><code>--no-report-unused-exports</code></td><td>enabled</td><td>Disable unused-export reporting.</td></tr>
+              <tr><td><code>--no-conventional-entries</code></td><td>included</td><td>Exclude conventional entries (<code>main.py</code>, <code>app.py</code>, <code>cli.py</code>, <code>__main__.py</code>, <code>setup.py</code>).</td></tr>
+              <tr><td><code>--include-entry-exports</code></td><td>disabled</td><td>Report unused exports declared in entry files.</td></tr>
+              <tr><td><code>--ignore-tests</code></td><td>disabled</td><td>Ignore test files and directories.</td></tr>
+              <tr><td><code>--cycles</code></td><td>disabled</td><td>Detect and report circular import cycles.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="report">Report options</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Flag</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>--fail-on high|medium|low|none</code></td><td>Exit non-zero when findings meet this confidence threshold. Default: never fails on findings alone.</td></tr>
+              <tr><td><code>--json</code></td><td>Print the structured JSON report. See <a href="reports.html">Reports</a>.</td></tr>
+              <tr><td><code>--sarif</code></td><td>Print SARIF output for Code Scanning. See <a href="reports.html">Reports</a>.</td></tr>
+              <tr><td><code>--no-color</code></td><td>Disable ANSI colors in terminal output.</td></tr>
+              <tr><td><code>-v, --verbose</code></td><td>Print internal graph state: entry points and every module marked R (reachable) or D (dead).</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="fix">Fix options</h2>
+        <p>
+          Analysis is always read-only. Fixes are opt-in and confidence-gated —
+          see <a href="fixes.html">Fixes &amp; --fix</a> for the safety model.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Flag</th><th>Default</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>--fix [files imports exports]</code></td><td>all targets</td><td>Apply fixes for the given targets. With no targets, applies <code>files</code>, <code>imports</code>, and <code>exports</code>.</td></tr>
+              <tr><td><code>--confidence high|medium+|low+|all</code></td><td><code>high</code></td><td>Minimum confidence to fix.</td></tr>
+              <tr><td><code>--dry-run</code></td><td>off</td><td>Log planned fixes without changing any files.</td></tr>
+              <tr><td><code>--force</code></td><td>off</td><td>Allow a fix normally considered unsafe (e.g. a name listed in <code>__all__</code>, or any definition when the project uses dynamic dispatch).</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="examples">Common combinations</h2>
+<pre><code># Fast CI pass: dead files and unused imports only
+pragyalint --rules unused_file unused_import --fail-on high
+
+# Preview exactly what --fix would change
+pragyalint --fix --dry-run
+
+# Machine-readable report for other tools
+pragyalint --json &gt; report.json
+pragyalint --sarif &gt; pragyalint.sarif
+
+# Verbose graph dump (debugging reachability)
+pragyalint -v</code></pre>
+
+        <h2 id="config">Config files feed the same options</h2>
+        <p>
+          Every value above can also come from <code>pragyalint.toml</code>,
+          <code>pragyalint.json</code>, or the <code>[tool.pragyalint]</code>
+          table in <code>pyproject.toml</code> (dashes become underscores).
+          Command-line flags always win. See <a href="config.html">Configuration</a>.
+        </p>
+
+        <h2 id="exit-codes">Exit codes</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Code</th><th>Meaning</th></tr></thead>
+            <tbody>
+              <tr><td><code>0</code></td><td>Scan completed; no finding met the <code>--fail-on</code> threshold (default).</td></tr>
+              <tr><td><code>1</code></td><td>At least one finding met or exceeded <code>--fail-on</code>.</td></tr>
+              <tr><td><code>2</code></td><td>Usage or configuration error — bad flags, invalid config value, unreadable config file.</td></tr>
+              <tr><td><code>130</code></td><td>Interrupted (<kbd>Ctrl-C</kbd>).</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

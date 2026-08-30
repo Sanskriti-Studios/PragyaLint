@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cache — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="What PragyaLint caches (and what it doesn't), why every run re-parses, and how to keep scans fast."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Cache</h1>
+        <p class="lead">
+          Short answer: PragyaLint keeps no on-disk analysis cache in the
+          current release. Every run re-discovers your files and re-parses
+          them. This page explains why, what actually controls a scan's cost,
+          and how to keep re-runs fast.
+        </p>
+
+        <h2 id="no-cache">Is there a cache?</h2>
+        <p>
+          No. PragyaLint does not write any persistent state (no
+          <code>pragyalint.cache</code>, no build directory, nothing hidden in
+          <code>__pycache__</code>). Each invocation:
+        </p>
+        <ol>
+          <li><strong>Walks</strong> the project tree looking for matching files.</li>
+          <li><strong>Parses</strong> every matching file with the standard-library <code>ast</code> module.</li>
+          <li><strong>Builds</strong> the module graph and runs the requested rules, all in memory.</li>
+        </ol>
+        <p>That's deliberate:</p>
+        <ul>
+          <li>
+            <strong>Correctness</strong> — a stale cache is a silent lie. After
+            any edit, the next scan must reflect current source.
+          </li>
+          <li>
+            <strong>Zero dependencies</strong> — no extra state to corrupt,
+            version, or debug, consistent with PragyaLint's
+            "standard library only" guarantee.
+          </li>
+        </ul>
+
+        <h2 id="cost">What actually affects run time</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Factor</th><th>Effect</th></tr></thead>
+            <tbody>
+              <tr><td>Number and size of files</td><td>Parsing dominates the scan; more code means a slower pass.</td></tr>
+              <tr><td><code>--include</code></td><td>Restricts analysis to files under the listed paths — the single biggest lever.</td></tr>
+              <tr><td><code>--ignore</code></td><td>Skips generated/templated/vendored directories entirely.</td></tr>
+              <tr><td><code>--rules</code></td><td>Fewer rules means fewer traversal passes over the graph.</td></tr>
+              <tr><td><code>--extensions</code></td><td>Limits which files are parsed at all.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="keep-fast">How to keep re-scans fast today</h2>
+<pre><code># Narrow the scan to your source tree
+pragyalint --include src
+
+# Skip generated and vendored code that'll never be dead
+pragyalint --ignore "**/generated" --ignore "vendor/"
+
+# CI: only the two highest-confidence, graph-only rules
+pragyalint --rules unused_file unused_import --fail-on high</code></pre>
+        <p>
+          Re-running immediately after a scan is also cheap because the OS page
+          cache still holds the source files — nothing about the analysis
+          itself is cached, but the operating system caches the reads.
+        </p>
+
+        <h2 id="bust">Busting the cache</h2>
+        <p>
+          There's nothing persistent to bust. If output ever looks stale, it's
+          not a cache — re-run the command. A quick way to be sure you're
+          analyzing what you think you are:
+        </p>
+<pre><code>pragyalint -v   # prints every module and whether it's reachable (R) or dead (D)</code></pre>
+
+        <h2 id="roadmap">Roadmap</h2>
+        <p>
+          A persistent incremental cache is a plausible future feature (skip
+          re-parsing files that haven't changed). When one ships, this page
+          will document how it's enabled, when it's invalidated, and how to
+          clear it.
+        </p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Plugins — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="Extending PragyaLint with custom finder passes through the Python API"
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Plugins</h1>
+        <p class="lead">
+          PragyaLint's extension point is the Python API: an analysis run is a
+          set of <em>finder</em> passes, and the set is pluggable. There is no
+          CLI plugin-autoloading yet — custom passes are registered by calling
+          <code>analyze()</code> yourself.
+        </p>
+
+        <h2 id="model">How rules are wired</h2>
+        <p>
+          <code>analyze()</code> receives a <code>hooks</code> mapping from
+          rule name to a finder class. <code>default_hooks()</code> returns the
+          five built-in finders:
+        </p>
+<pre><code>from pragyalint.analyzer import default_hooks
+
+print(default_hooks())  # {rule: FinderClass, ...}</code></pre>
+
+        <h2 id="custom">Writing a custom finder</h2>
+        <p>
+          A finder subclasses <code>Finder</code>, reads the module records and
+          AST trees available on itself, and calls <code>emit()</code>:
+        </p>
+<pre><code>import ast
+from pragyalint.analyzer import analyze, default_hooks
+from pragyalint.finders import Finder
+from pragyalint.models import Confidence, Finding
+
+class MissingDocstringFinder(Finder):
+    """Report modules whose first statement isn't a docstring."""
+
+    rule = "missing_docstring"
+
+    def run(self, records):
+        for record in records:
+            tree = self.trees.get(record.path)
+            if tree is None:
+                continue
+            if isinstance(tree.body[0], ast.Expr) and isinstance(
+                tree.body[0].value, ast.Constant
+            ):
+                continue
+            self.emit(
+                Finding(
+                    rule=self.rule,
+                    confidence=Confidence.LOW,
+                    message="module lacks a docstring",
+                    file=record.path,
+                    line=1,
+                )
+            )
+
+report = analyze(
+    "src",
+    hooks={**default_hooks(), "missing_docstring": MissingDocstringFinder},
+)
+
+for finding in report.findings:
+    print(finding.rule, finding.confidence, finding.file)</code></pre>
+        <p>What a finder gets to work with:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Attribute</th><th>Contents</th></tr></thead>
+            <tbody>
+              <tr><td><code>self.report</code></td><td>The <code>AnalysisReport</code>, already populated with module records and reachability.</td></tr>
+              <tr><td><code>self.graph</code></td><td>The module graph — <code>used_members_for()</code>, <code>resolve_to_record()</code>, <code>tree_for()</code>.</td></tr>
+              <tr><td><code>self.trees</code></td><td><code>path → ast.Module</code> for every analyzed file.</td></tr>
+              <tr><td><code>self.options</code></td><td>Passed-in options, e.g. <code>include_entry_exports</code>.</td></tr>
+              <tr><td><code>self.emit(finding)</code></td><td>Appends the finding to the report and updates its summary counters.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="reporters">Custom reporters</h2>
+        <p>
+          The reporters are plain functions over an <code>AnalysisReport</code>:
+          <code>format_terminal(report, color=True)</code>,
+          <code>format_json(report, indent=2)</code>, and
+          <code>format_sarif(report)</code>. Pass a report to your own
+          formatter the same way.
+        </p>
+
+        <h2 id="limits">Current limits</h2>
+        <ul>
+          <li>No external plugin discovery (no entry-point scanning, no config-triggered loading) — you drive <code>analyze()</code>.</li>
+          <li>Finders see <em>records</em> and <em>trees</em>, not resolved types; the same static-analysis boundaries that constrain the built-ins apply.</li>
+          <li>The analyzer API is alpha-level and may change between releases.</li>
+        </ul>
+        <p>
+          If a custom rule proves generally useful, consider contributing it as
+          a built-in — see <a href="contributing.html">Contributing</a>.
+        </p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

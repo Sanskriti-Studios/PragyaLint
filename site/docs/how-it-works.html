@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>How it works — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="How PragyaLint builds a module graph, computes reachability, and assigns confidence levels to dead-code findings."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>How it works</h1>
+        <p class="lead">
+          PragyaLint runs in three stages: build a graph, compute reachability,
+          then run each rule against the result.
+        </p>
+
+        <h2 id="discovery">1. Discovery</h2>
+        <p>
+          PragyaLint walks your project directory (respecting
+          <code>--ignore</code> patterns and skipping <code>__pycache__</code>,
+          <code>node_modules</code>, <code>site-packages</code>, and virtualenv
+          directories automatically) and parses every matching file with the
+          standard-library <code>ast</code> module.
+        </p>
+
+        <h2 id="graph">2. Module graph</h2>
+        <p>
+          For each file, PragyaLint extracts:
+        </p>
+        <ul>
+          <li><strong>Imports</strong> — every <code>import</code> and <code>from ... import</code> statement, resolved to a module name.</li>
+          <li><strong>Exports</strong> — top-level functions, classes, and assignments (or the explicit <code>__all__</code> list, if present).</li>
+          <li><strong>Entry status</strong> — whether the file qualifies as an entry point. See <a href="entry-files.html">Entry files</a>.</li>
+        </ul>
+        <p>
+          These become a directed graph: modules are nodes, imports are edges.
+        </p>
+
+        <h2 id="reachability">3. Reachability</h2>
+        <p>
+          Starting from every entry-point module, PragyaLint walks the import
+          graph outward. Any module never reached this way is flagged
+          <span class="conf conf-high">high</span>-confidence dead (rule
+          <code>unused_file</code>). Anything reached but containing exports
+          nothing else imports gets checked by the remaining rules. See
+          <a href="analysis.html">Analysis rules</a> for the full rule set.
+        </p>
+
+        <h2 id="dynamic-note">4. Dynamic-dispatch check</h2>
+        <p>
+          Before finalizing findings, PragyaLint scans the whole project for
+          patterns that can hide real usage from the graph: dispatch tables,
+          <code>getattr()</code>, <code>exec</code>/<code>eval</code>,
+          <code>globals()</code>/<code>locals()</code>. Names used this way are
+          excluded from findings entirely where resolvable, or the rest of the
+          project's findings are downgraded to LOW confidence where not. Full
+          detail on <a href="dynamic-dispatch.html">Dynamic dispatch</a>.
+        </p>
+
+        <h2 id="output">5. Report</h2>
+        <p>
+          Every remaining issue becomes a <code>Finding</code>: a rule name, a
+          confidence level, a message, and a file/line location. These render
+          to your terminal by default, or as JSON/SARIF with
+          <code>--json</code>/<code>--sarif</code> — see
+          <a href="reports.html">Reports</a>.
+        </p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

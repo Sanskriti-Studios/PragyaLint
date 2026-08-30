@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dynamic dispatch — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="How PragyaLint detects getattr, dispatch tables, and exec/eval, and stays safe around code that calls functions by name at runtime."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Dynamic dispatch</h1>
+        <p class="lead">
+          Static analysis sees your code as text and syntax — it has no idea
+          what happens at runtime. Code that calls functions <em>by name</em>
+          instead of by direct reference is invisible to a naive
+          "is this name referenced anywhere" check. PragyaLint specifically
+          detects the common shapes of this and adjusts its confidence
+          accordingly, rather than confidently deleting something that's
+          actually alive.
+        </p>
+
+        <h2 id="patterns">Patterns PragyaLint recognizes</h2>
+
+        <h3>Dispatch tables</h3>
+        <p>A dict, list, tuple, or set literal whose values are bare names:</p>
+<pre><code>DISPATCH = {"echo": execute_line, "run": run_block}
+HANDLERS = [handler_a, handler_b]</code></pre>
+        <p>
+          Names used this way are treated as used, project-wide — no
+          downgrade needed, because this pattern is fully resolvable
+          statically.
+        </p>
+
+        <h3>Literal <code>getattr()</code></h3>
+<pre><code>fn = getattr(runtime, "execute_line")</code></pre>
+        <p>
+          Also fully resolvable — PragyaLint treats this exactly like
+          <code>runtime.execute_line</code>, a normal attribute access.
+        </p>
+
+        <h3>Computed <code>getattr()</code>, <code>exec</code>, <code>eval</code>, <code>globals()</code>/<code>locals()</code></h3>
+<pre><code>fn = getattr(runtime, user_input)   # name isn't a literal — can't resolve
+exec(f"{cmd}()")
+globals()[cmd_name]()</code></pre>
+        <p>
+          These are genuinely undecidable by static analysis — the actual name
+          being looked up depends on runtime data. When PragyaLint detects any
+          of these <strong>anywhere in the project</strong>, it downgrades
+          every remaining <code>unused_export</code>/<code>unused_local</code>
+          finding to <span class="conf conf-low">low</span> confidence,
+          project-wide.
+        </p>
+
+        <div class="callout">
+          <strong>Why project-wide, not just the file with the call?</strong>
+          A reflective call in <code>app.py</code> can just as easily reach a
+          function defined in <code>runtime.py</code>. Limiting the safety
+          check to only the file containing the <code>getattr</code> call
+          would miss exactly the cross-file case that matters most — an
+          interpreter's dispatch logic living in one file, calling functions
+          defined in another.
+        </div>
+
+        <h2 id="fixer-gate">The <code>--force</code> gate</h2>
+        <p>
+          Confidence downgrade alone isn't the only safety net. Once dynamic
+          dispatch is detected anywhere in the project, <code>--fix</code>
+          refuses to delete any definition — even at
+          <code>--confidence all</code> — unless you also pass
+          <code>--force</code>:
+        </p>
+<pre><code># Reports the finding, but does not delete anything:
+pragyalint --fix exports --confidence all
+
+# Explicitly overrides the safety check:
+pragyalint --fix exports --confidence all --force</code></pre>
+
+        <h2 id="pragma">Manual override: the keep pragma</h2>
+        <p>
+          For a specific definition you know is used dynamically in a way
+          PragyaLint can't detect (a computed name, a decorator-based
+          registry), mark it directly:
+        </p>
+<pre><code>def execute_line(line):  # pragyalint: keep
+    ...</code></pre>
+        <p>
+          This exempts the definition from <code>unused_export</code> and
+          <code>unused_local</code> entirely, regardless of confidence or
+          dynamic-dispatch state elsewhere in the project.
+        </p>
+
+        <h2 id="limits">What this doesn't solve</h2>
+        <p>
+          PragyaLint can't prove a computed <code>getattr</code> name is safe
+          to delete — that's genuinely undecidable in general. The
+          LOW-confidence downgrade plus the <code>--force</code> requirement
+          exist precisely because of this limit: they make deletion opt-in
+          rather than automatic once the analysis can no longer be fully
+          certain, rather than pretending certainty it doesn't have.
+        </p>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

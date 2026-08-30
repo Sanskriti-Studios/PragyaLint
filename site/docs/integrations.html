@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Integrations overview — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="PragyaLint integration overview: editors, CI, and the Python API at a glance."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+
+        <h1>Integrations</h1>
+        <p class="lead">
+          PragyaLint is a single self-contained Python package with zero
+          runtime dependencies — integrating it is usually one install plus
+          one command. This page is the map; the linked pages have the details.
+        </p>
+
+        <h2 id="requirements">The one prerequisite</h2>
+        <p>Everything below assumes the <code>pragyalint</code> executable is on <code>PATH</code>:</p>
+<pre><code>pip install pragyalint
+pragyalint --version</code></pre>
+        <p>
+          Python 3.11 or newer. If tools you shell out from (editors, CI
+          runners) can't find it, set the executable's absolute path in their
+          config — see <a href="errors.html">Errors &amp; troubleshooting</a>.
+        </p>
+
+        <h2 id="editor">Editor</h2>
+        <div class="callout">
+          <strong>VS Code</strong> — the official
+          <a href="vscode.html">PragyaLint extension</a> publishes dead-code
+          findings to the Problems panel, colored by confidence, and runs
+          fixes as editor commands. Install it from the Marketplace or with
+          <code>code --install-extension IndianCoder3.sks-pragyalint</code>.
+        </div>
+
+        <h2 id="ci">CI / automation</h2>
+        <div class="callout">
+          <strong>GitHub Actions, GitLab CI, pre-commit</strong> — see
+          <a href="automation.html">CI / automation</a> for ready-to-copy
+          workflows using <code>--fail-on</code> to gate merges and
+          <code>--sarif</code> to feed Code Scanning.
+        </div>
+
+        <h2 id="api">Library use</h2>
+        <div class="callout">
+          <strong>Python API</strong> — <code>analyze()</code>,
+          <code>apply_fixes()</code>, and the report model let you embed
+          PragyaLint in your own tooling. See <a href="api.html">Python API</a>,
+          and <a href="plugins.html">Plugins</a> for custom finder passes.
+        </div>
+
+        <h2 id="flow">A typical workflow</h2>
+<pre><code># Local: review what's dead
+pragyalint
+
+# Local: preview an automated prune
+pragyalint --fix --dry-run
+
+# CI on every push: block merges that add high-confidence dead code
+pragyalint --fail-on high</code></pre>
+        <div class="docs-pager" id="docs-pager"></div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>
