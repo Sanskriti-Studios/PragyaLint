@@ -73,12 +73,18 @@
         <ul>
           <li><strong>sdist + wheel</strong> — install with <code>pip install pragyalint</code>.</li>
           <li><strong>Standalone binaries</strong> — PyInstaller-built executables for Windows (<code>.exe</code>), Linux, and macOS, attached to the GitHub Release.</li>
+          <li><strong>Extension</strong> — the VS Code package (<code>.vsix</code>) is built and attached to the release too.</li>
         </ul>
         <p>
           The release pipeline in <code>.github/workflows/publish.yml</code>
-          publishes when a commit message contains <code>release:</code>
-          (e.g. <code>release: v0.1.3</code>); <code>bins.yml</code> builds the
-          platform binaries in parallel on native runners.
+          runs when a commit message contains <code>release:</code>
+          (e.g. <code>release: v0.1.4</code>): it builds the PyPI wheel,
+          PyInstaller binaries for Windows/Linux/macOS, and creates the GitHub
+          Release with every asset attached. The
+          <code>.github/workflows/vsix.yml</code> workflow builds and attaches
+          the VS Code extension package to the same release, and tries to
+          publish it to the VS Code Marketplace when a <code>VSCE_PAT</code>
+          secret is configured.
         </p>
 
         <h2 id="versioning">Versions</h2>

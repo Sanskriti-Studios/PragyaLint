@@ -145,13 +145,21 @@ jobs:
     name: create release + attach assets
     needs: [build, publish, binaries]
     runs-on: ubuntu-latest
-    if: needs.publish.result == 'success' || needs.binaries.result == 'success'
+    # Create the GitHub Release whenever this is a flagged release build,
+    # independent of whether the PyPI publish succeeded, so a `release:`
+    # commit ALWAYS produces a release.
+    if: |
+      needs.build.result == 'success' &&
+      (contains(github.event.head_commit.message, 'release:') ||
+       (github.event_name == 'workflow_dispatch' && github.event.inputs.force-release == 'true') ||
+       github.event_name == 'release')
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
       - uses: actions/download-artifact@v4
+        if: needs.binaries.result == 'success'
         with:
           path: binaries/
           pattern: pragyalint-*

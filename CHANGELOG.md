@@ -5,6 +5,34 @@ All notable changes to PragyaLint are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.1.4] - 2026-08-30
+
+### Added
+
+- Windows compatibility end to end:
+  - Terminal/JSON/SARIF output is UTF-8-safe on Windows consoles and
+    non-UTF-8 locales — the Unicode markers no longer crash the CLI when
+    output is piped or redirected.
+  - The fixer preserves CRLF line endings (and no longer mangles them via
+    universal-newline translation).
+  - The VS Code extension auto-detects `pip --user` / pipx binaries in the
+    standard Windows locations (`%APPDATA%\Python\Scripts`, pipx `Scripts`).
+- 16 documentation pages complete the docs site (why/how-it-works, CLI
+  reference, reports, cache, integrations, automation, plugins, VS Code, API,
+  contributing, source).
+- README rebuilt with `for-the-badge` badges, the brand logo, and prebuilt
+  binary install instructions.
+- Release pipeline: a `release:` commit now always produces a GitHub Release
+  with the PyPI wheel, Windows/Linux/macOS binaries, and the VSIX attached.
+  A separate workflow builds the VSIX and can publish it to the Marketplace
+  when a `VSCE_PAT` secret is configured.
+
+### Changed
+
+- `pragyalint/__init__.py` version is kept in sync with `pyproject.toml`, so
+  release tags always agree with `pragyalint --version`.
+- `LICENSE` updated to the canonical GPL-3.0 text.
+
 ## [0.1.1] - 2026-08-29
 
 ### Changed

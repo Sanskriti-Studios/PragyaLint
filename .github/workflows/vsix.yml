@@ -1,0 +1,85 @@
+name: vsix
+
+# Builds the Visual Studio Code extension package (`.vsix`) whenever a release
+# is being cut:
+#   - the pushed commit message contains `release:` (e.g. "release: v0.1.4")
+#   - a GitHub Release is published
+#   - manual trigger with the force flag
+#
+# The `.vsix` is attached to the GitHub Release created by the `release`
+# workflow (publish.yml), so every release ships the wheel + sdist, the
+# standalone binaries (Windows/Linux/macOS), AND the VSIX.
+#
+# Marketplace publishing is attempted only when a `VSCE_PAT` secret exists —
+# an Azure DevOps PAT with "Marketplace > Manage" scope from the publisher's
+# account. If the secret is absent (or the extension isn't registered yet),
+# that step is skipped silently and the VSIX is still built and attached.
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  # Manual trigger: check "Build VSIX even without release: commit".
+  workflow_dispatch:
+    inputs:
+      force-release:
+        description: "Build VSIX even without release: commit"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write    # to attach the VSIX to the release
+
+jobs:
+  vsix:
+    name: build + attach vsix
+    runs-on: ubuntu-latest
+    if: |
+      contains(github.event.head_commit.message, 'release:') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.force-release == 'true') ||
+      github.event_name == 'release'
+    defaults:
+      run:
+        working-directory: extensions/vscode-pragyalint
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund --ignore-scripts
+
+      - name: Compile TypeScript
+        run: npm run compile
+
+      - name: Package VSIX
+        run: npx vsce package --no-dependencies
+
+      - name: Determine release tag
+        id: version
+        run: |
+          python3 - <<'PY'
+          import tomllib
+          with open("../../pyproject.toml", "rb") as fh:
+              version = tomllib.load(fh)["project"]["version"]
+          print(f"tag=v{version}")
+          PY
+
+      - name: Publish to VS Code Marketplace (requires VSCE_PAT secret)
+        if: ${{ secrets.VSCE_PAT != '' }}
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: npx vsce publish --no-git-tag-version -p "$VSCE_PAT"
+
+      - name: Attach VSIX to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          files: extensions/vscode-pragyalint/*.vsix
+          fail_on_unmatched_files: true
