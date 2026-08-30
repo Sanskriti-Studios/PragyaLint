@@ -60,6 +60,18 @@
             <i class="fa-solid fa-robot"></i> CI-ready
           </div>
 
+          <div class="badges" data-reveal>
+            <span class="live-badge" data-live-stats="gh-stars">
+              <i class="fa-solid fa-star"></i> <strong>Star</strong> <span class="dim">on GitHub</span>
+            </span>
+            <span class="live-badge" data-live-stats="pypi-version">
+              <i class="fa-brands fa-python"></i> PyPI <strong>latest</strong>
+            </span>
+            <span class="live-badge" data-live-stats="gh-updated">
+              <i class="fa-brands fa-github"></i> Actively maintained
+            </span>
+          </div>
+
           <div class="demo" data-reveal>
             <div class="demo-bar">
               <span class="dot"></span><span class="dot"></span><span class="dot"></span>
@@ -70,6 +82,33 @@
               </span>
             </div>
             <div class="demo-body demo-run"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="container">
+          <div class="section-head" data-reveal>
+            <h2>Why PragyaLint</h2>
+            <p>Same idea as vulture or ruff's unused-import checks — different guarantees.</p>
+          </div>
+          <div class="why-grid" data-reveal>
+            <div>
+              <h4><i class="fa-solid fa-diagram-project"></i> Reachability, not heuristics</h4>
+              <p>Builds a real module graph from your entry points instead of guessing from naming conventions or a confidence percentage pulled from nowhere.</p>
+            </div>
+            <div>
+              <h4><i class="fa-solid fa-shuffle"></i> Dynamic-dispatch aware</h4>
+              <p>Recognizes <code>getattr()</code>, dispatch tables, and <code>exec</code>/<code>eval</code> — and downgrades confidence project-wide instead of confidently deleting a function that's actually alive.</p>
+            </div>
+            <div>
+              <h4><i class="fa-solid fa-vial"></i> Test-suite safe by default</h4>
+              <p>Understands pytest's own discovery convention (<code>test_*.py</code>, <code>conftest.py</code>) so it never proposes deleting your tests as "unreachable."</p>
+            </div>
+            <div>
+              <h4><i class="fa-solid fa-box"></i> Zero dependencies</h4>
+              <p>Built entirely on the standard-library <code>ast</code> module. No parser to ship, no supply-chain surface to audit.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -186,6 +225,7 @@
     <div id="footer"></div>
 
     <script src="js/layout.js"></script>
+    <script src="js/live-stats.js"></script>
     <script src="js/main.js"></script>
   </body>
 </html>

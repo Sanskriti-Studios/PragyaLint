@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Errors &amp; troubleshooting — PragyaLint Docs</title>
+    <meta
+      name="description"
+      content="Fix common PragyaLint errors: command not found / ENOENT, PATH issues, parse errors, config errors, exit codes, and CI failures."
+    />
+    <script>
+      (function () {
+        var p = location.pathname;
+        var root;
+        var di = p.indexOf("/docs/");
+        if (di !== -1) {
+          root = p.slice(0, di + 1);
+        } else {
+          var last = p.lastIndexOf("/");
+          root = last <= 0 ? "/" : p.slice(0, last + 1);
+        }
+        var b = document.createElement("base");
+        b.href = root;
+        document.head.insertBefore(b, document.head.firstChild);
+      })();
+    </script>
+
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  </head>
+  <body>
+    <div id="nav"></div>
+
+    <div class="container docs">
+      <aside class="docs-aside" id="docs-aside"></aside>
+      <div class="docs-content">
+        <h1>Errors &amp; troubleshooting</h1>
+        <p class="lead">
+          What each error actually means, why it happens, and the fastest fix.
+          Findings (HIGH/MEDIUM/LOW dead-code reports) aren't errors — this page
+          is about things that stop PragyaLint from running at all, or make it
+          behave unexpectedly.
+        </p>
+
+        <div class="callout">
+          <strong>Quick check:</strong> run <code>pragyalint --version</code> first.
+          If that fails, it's an installation problem (see below). If it succeeds
+          but scanning fails, it's a project-level problem — jump to
+          <a href="#parse-errors">parse errors</a> or <a href="#config-errors">config errors</a>.
+        </div>
+
+        <h2 id="install-errors">Installation &amp; "command not found"</h2>
+
+        <div class="error-card">
+          <div class="error-card-head">
+            <i class="fa-solid fa-terminal"></i>
+            <span>zsh / bash: <span class="flag">pragyalint</span>: command not found</span>
+            <span class="conf conf-high">Most common</span>
+          </div>
+          <div class="error-card-body">
+            <h4>What's happening</h4>
+            <p>
+              <code>pip install</code> put the <code>pragyalint</code> executable
+              somewhere your shell's <code>PATH</code> doesn't include — almost
+              always because it was installed with <code>--user</code>, inside a
+              deactivated virtualenv, or via a Python that isn't the one on your
+              <code>PATH</code>.
+            </p>
+            <h4>Fix</h4>
+<pre><code># Confirm it's actually installed and find where
+python3 -m pip show pragyalint
+python3 -m pip show -f pragyalint | grep pragyalint
+
+# Simplest fix: run it as a module instead of relying on PATH
+python3 -m pragyalint
+
+# Or install with pipx, which manages PATH for you
+pipx install pragyalint
+pragyalint --version</code></pre>
+            <p>
+              If you installed with <code>pip install --user</code>, add your
+              user base's bin directory to <code>PATH</code> — on Linux/macOS
+              that's usually <code>~/.local/bin</code>:
+            </p>
+<pre><code>echo 'export PATH="$HOME/.local/bin:$PATH"' &gt;&gt; ~/.bashrc
+source ~/.bashrc</code></pre>
+          </div>
+        </div>
+
+        <div class="error-card">
+          <div class="error-card-head">
+            <i class="fa-solid fa-terminal"></i>
+            <span><span class="flag">ENOENT</span>: no such file or directory, spawn pragyalint</span>
+            <span class="conf conf-high">Editors / CI</span>
+          </div>
+          <div class="error-card-body">
+            <p>
+              This is the Node.js-style version of the same "not found" problem
+              above — you'll see it in VS Code output panels, pre-commit logs,
+              or any tool that shells out to <code>pragyalint</code> as a
+              subprocess (rather than a shell you typed into directly). It means
+              the process trying to launch PragyaLint couldn't resolve it on its
+              own <code>PATH</code>, which is <strong>not always the same
+              <code>PATH</code></strong> your terminal uses — GUI apps on macOS
+              in particular often see a minimal system <code>PATH</code>.
+            </p>
+            <h4>Fix</h4>
+            <ul>
+              <li>
+                Point the tool at the full path instead of the bare command name:
+                run <code>which pragyalint</code> (or <code>where pragyalint</code>
+                on Windows) and paste that absolute path into the tool's config.
+              </li>
+              <li>
+                For the <a href="vscode.html">VS Code extension</a> specifically:
+                set <code>pragyalint.path</code> in your settings, or install
+                inside the same virtualenv VS Code's Python interpreter is using.
+              </li>
+              <li>
+                For pre-commit: use the <code>language: python</code> hook form
+                so pre-commit manages its own isolated install rather than
+                shelling out to a system PATH lookup — see
+                <a href="automation.html">CI / automation</a>.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="error-card">
+          <div class="error-card-head">
+            <i class="fa-solid fa-terminal"></i>
+            <span>ModuleNotFoundError: No module named 'pragyalint'</span>
+          </div>
+          <div class="error-card-body">
+            <p>
+              You installed into one Python environment and are running a
+              different one — usually a system Python vs. a virtualenv/conda
+              env mismatch. Confirm which interpreter you're actually using:
+            </p>
+<pre><code>python3 -c "import sys; print(sys.executable)"
+python3 -m pip show pragyalint   # run with the SAME python3</code></pre>
+            <p>
+              If they don't match the environment you activated, reinstall with
+              that exact interpreter: <code>/path/to/venv/bin/python -m pip
+              install pragyalint</code>.
+            </p>
+          </div>
+        </div>
+
+        <h2 id="parse-errors">Parse &amp; scan errors</h2>
+
+        <div class="error-card">
+          <div class="error-card-head">
+            <i class="fa-solid fa-file-circle-exclamation"></i>
+            <span>SyntaxError while parsing &lt;file&gt;</span>
+          </div>
+          <div class="error-card-body">
+            <p>
+              PragyaLint parses every file with the standard-library
+              <code>ast</code> module using <strong>your currently-running
+              Python's grammar</strong>. Two common causes:
+            </p>
+            <h4>Cause 1 — Python version mismatch</h4>
+            <p>
+              The file uses syntax newer than the Python interpreter running
+              PragyaLint (e.g. a <code>match</code> statement parsed under
+              Python 3.9). Run PragyaLint with the same Python version your
+              project targets: <code>python3.12 -m pragyalint</code>.
+            </p>
+            <h4>Cause 2 — Genuinely broken file</h4>
+            <p>
+              Templated files (Jinja-flavored <code>.py</code>, generated
+              stubs) aren't valid standalone Python. Exclude them:
+            </p>
+<pre><code>pragyalint --ignore "**/*.generated.py" --ignore "templates/**"</code></pre>
+            <p>
+              A parse error on one file never stops the whole scan — PragyaLint
+              reports it as a finding on that file and continues with the rest
+              of your project.
+            </p>
+          </div>
+        </div>
+
+        <div class="error-card">
+          <div class="error-card-head">
+            <i class="fa-solid fa-file-circle-exclamation"></i>
+            <span>UnicodeDecodeError / can't decode byte</span>
+          </div>
+          <div class="error-card-body">
+            <p>
+              A source file isn't UTF-8 (common with files edited on Windows
+              in an editor that defaulted to a different codepage, or a binary
+              file with a <code>.py</code> extension by mistake). Re-save the
+              file as UTF-8, or exclude it with <code>--ignore</code> if it's
+              not meant to be scanned.
+            </p>
+          </div>
+        </div>
+
+        <h2 id="config-errors">Configuration errors</h2>
+
+        <div class="error-card">
+          <div class="error-card-head">
+            <i class="fa-solid fa-sliders"></i>
+            <span>unknown confidence level: '&lt;value&gt;'</span>
+          </div>
+          <div class="error-card-body">
+            <p>
+              <code>--confidence</code> and <code>--fail-on</code> only accept
+              <code>high</code>, <code>medium</code>, or <code>low</code>
+              (optionally with a trailing <code>+</code>, e.g.
+              <code>medium+</code> to mean "medium and everything stricter").
+              Check for a typo or a stray value pulled from
+              <code>pyproject.toml</code>.
+            </p>
+          </div>
+        </div>
+
+        <div class="error-card">
+          <div class="error-card-head">
+            <i class="fa-solid fa-sliders"></i>
+            <span>Config loaded from pyproject.toml is silently ignored</span>
+          </div>
+          <div class="error-card-body">
+            <p>
+              PragyaLint reads config from <code>[tool.pragyalint]</code> in
+              <code>pyproject.toml</code>, <em>or</em> a standalone
+              <code>.pragyalint.toml</code>/<code>pragyalint.toml</code> at the
+              project root. It doesn't merge both — the standalone file wins if
+              present. See the full precedence order on the
+              <a href="config.html">Configuration</a> page.
+            </p>
+          </div>
+        </div>
+
+        <h2 id="fix-errors">Errors from <code>--fix</code></h2>
+
+        <div class="error-card">
+          <div class="error-card-head">
+            <i class="fa-solid fa-wrench"></i>
+            <span>Nothing was deleted, even with <span class="flag">--fix</span></span>
+          </div>
+          <div class="error-card-body">
+            <p>Three independent gates all have to pass for a deletion to happen:</p>
+            <h4>1. Confidence threshold</h4>
+            <p>
+              <code>--fix</code> alone only applies HIGH-confidence findings.
+              Pass <code>--confidence medium+</code> or <code>--confidence all</code>
+              to include MEDIUM/LOW findings too.
+            </p>
+            <h4>2. Dynamic dispatch detected</h4>
+            <p>
+              If PragyaLint sees <code>getattr()</code>, <code>exec</code>,
+              <code>eval</code>, or <code>globals()</code>/<code>locals()</code>
+              anywhere in your project, it refuses to delete definitions
+              project-wide unless you pass <code>--force</code>. This is
+              intentional — see <a href="dynamic-dispatch.html">Dynamic dispatch</a>.
+            </p>
+            <h4>3. Entry files and <code>__all__</code></h4>
+            <p>
+              Exports listed in <code>__all__</code>, and top-level definitions
+              in entry files (including test files), aren't deleted by default
+              even at low confidence — they're treated as the public surface.
+            </p>
+            <p>Run with <code>--dry-run</code> to see exactly which gate is blocking a given finding before deciding whether to override it.</p>
+          </div>
+        </div>
+
+        <h2 id="exit-codes">Exit codes</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Code</th><th>Meaning</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>0</code></td><td>Scan completed; no finding met the <code>--fail-on</code> threshold (default: never fails on findings alone).</td></tr>
+              <tr><td><code>1</code></td><td>At least one finding met or exceeded <code>--fail-on</code>. This is the code CI should watch for.</td></tr>
+              <tr><td><code>2</code></td><td>Usage error — bad flags, invalid config value, or a root directory that doesn't exist.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h2 id="still-stuck">Still stuck?</h2>
+        <p>
+          Run with the full traceback and open an issue with it attached —
+          that turns a guess into a two-minute fix on our end.
+        </p>
+<pre><code>pragyalint --root-dir . --verbose 2&gt; pragyalint-debug.log
+cat pragyalint-debug.log</code></pre>
+        <p>
+          Open an issue at
+          <a href="https://github.com/Sanskriti-Studios/PragyaLint/issues" target="_blank" rel="noopener">github.com/Sanskriti-Studios/PragyaLint/issues</a>
+          with the log, your OS, and <code>python3 --version</code>.
+        </p>
+
+        <div class="next-steps" id="docs-next" data-pages="faq.html,cli-commands.html,config.html,dynamic-dispatch.html,contributing.html">
+          <h2>Next steps</h2>
+          <div class="next-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="footer"></div>
+
+    <script src="js/layout.js"></script>
+    <script src="js/docs-nav.js"></script>
+    <script src="js/docs.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

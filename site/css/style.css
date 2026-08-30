@@ -6,18 +6,23 @@
   --bg-elevated: #ffffff;
   --fg: #1a1d24;
   --fg-muted: #5b6472;
-  --border: #e4e7ec;
+  --border: #dfe2e8;
   --accent: #6c5ce7;
   --accent-soft: #efeafd;
   --accent-fg: #ffffff;
   --high: #e5484d;
   --medium: #f5a623;
   --low: #0091ff;
+  --ok: #1fa971;
   --code-bg: #f4f5f7;
   --code-fg: #24292f;
-  --shadow: 0 10px 40px rgba(20, 22, 31, 0.08);
-  --radius: 14px;
-  --maxw: 1080px;
+  --shadow: 0 10px 32px rgba(20, 22, 31, 0.06);
+  /* Boxed, squared-off visual language: sharp corners everywhere except a
+     couple of small affordances (pills, dots) where a full radius reads as
+     "status," not "panel." */
+  --radius: 3px;
+  --radius-lg: 4px;
+  --maxw: 1160px;
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
   --mono: "SF Mono", "JetBrains Mono", "Fira Code", ui-monospace, Menlo,
@@ -37,9 +42,10 @@
   --high: #f2555a;
   --medium: #ffb52e;
   --low: #3ba4ff;
+  --ok: #35c98c;
   --code-bg: #12141b;
   --code-fg: #d6dae3;
-  --shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+  --shadow: 0 10px 32px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -422,12 +428,30 @@ a:hover {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 26px;
-  transition: transform 0.15s ease, border-color 0.2s;
+  transition: transform 0.15s ease, border-color 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.2s;
 }
 
 .card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  box-shadow: var(--shadow);
+}
+
+.card:hover::before {
+  opacity: 1;
 }
 
 .card .icon {
@@ -814,4 +838,387 @@ pre code {
 .stat small {
   color: var(--fg-muted);
   font-size: 0.8rem;
+}
+
+/* ---------- Live badges (GitHub stars, PyPI version, last updated) ---------- */
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 22px auto 0;
+}
+
+.live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  font-size: 0.82rem;
+  color: var(--fg-muted);
+  font-family: var(--mono);
+}
+
+.live-badge i {
+  color: var(--accent);
+}
+
+.live-badge strong {
+  color: var(--fg);
+  font-weight: 700;
+}
+
+.live-badge .dim {
+  opacity: 0.7;
+}
+
+/* ---------- Boxed "why use it" comparison ---------- */
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.why-grid > div {
+  padding: 22px 24px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.why-grid > div:last-child {
+  border-right: none;
+}
+
+.why-grid h4 {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.why-grid h4 i {
+  color: var(--accent);
+}
+
+.why-grid p {
+  margin: 0;
+  color: var(--fg-muted);
+  font-size: 0.9rem;
+}
+
+/* ---------- Docs sidebar: grouped, collapsible on small screens ---------- */
+.docs-aside-toggle {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--fg);
+  font-weight: 600;
+  font-size: 0.92rem;
+  padding: 12px 14px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.docs-aside-toggle span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.docs-aside-toggle i:last-child {
+  transition: transform 0.2s;
+}
+
+.docs-aside-toggle[aria-expanded="true"] i:last-child {
+  transform: rotate(180deg);
+}
+
+.docs-aside-body h4 {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  margin: 22px 0 8px;
+}
+
+.docs-aside-body h4:first-child {
+  margin-top: 0;
+}
+
+.docs-aside-body a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fg-muted);
+  padding: 7px 10px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  border: 1px solid transparent;
+}
+
+.docs-aside-body a i {
+  width: 16px;
+  text-align: center;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.docs-aside-body a:hover {
+  color: var(--fg);
+  background: var(--bg-soft);
+  text-decoration: none;
+}
+
+.docs-aside-body a.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  font-weight: 600;
+}
+
+/* ---------- "Next steps" big button grid (replaces plain link lists) ---------- */
+.next-steps {
+  margin-top: 48px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+}
+
+.next-steps h2 {
+  font-size: 1.3rem;
+  margin: 0 0 18px;
+  border-top: none !important;
+  padding-top: 0 !important;
+}
+
+.next-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.next-btn {
+  display: grid;
+  grid-template-columns: 40px 1fr auto;
+  grid-template-rows: auto auto;
+  align-items: center;
+  column-gap: 14px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elevated);
+  color: var(--fg);
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+
+.next-btn:hover {
+  text-decoration: none;
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.next-btn i:first-child {
+  grid-row: 1 / 3;
+  font-size: 1.3rem;
+  color: var(--accent);
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  border-radius: var(--radius);
+}
+
+.next-btn-label {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.next-btn-desc {
+  grid-column: 2;
+  color: var(--fg-muted);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.next-btn-arrow {
+  grid-row: 1 / 3;
+  color: var(--fg-muted);
+  transition: transform 0.15s, color 0.15s;
+}
+
+.next-btn:hover .next-btn-arrow {
+  transform: translateX(3px);
+  color: var(--accent);
+}
+
+/* ---------- Colored terminal flags / tokens inside <pre> demos ---------- */
+.demo-body .flag,
+pre .flag {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.demo-body .str,
+pre .str {
+  color: var(--ok);
+}
+
+.demo-body .num,
+pre .num {
+  color: var(--low);
+}
+
+.demo-body .path,
+pre .path {
+  color: var(--fg-muted);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--fg-muted) 40%, transparent);
+}
+
+.demo-body .ok,
+pre .ok {
+  color: var(--ok);
+}
+
+/* ---------- Error reference cards (docs/errors.html) ---------- */
+.error-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 18px 0;
+  overflow: hidden;
+}
+
+.error-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.error-card-head .conf {
+  margin-left: auto;
+}
+
+.error-card-body {
+  padding: 4px 18px 18px;
+}
+
+.error-card-body h4 {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-muted);
+  margin: 16px 0 6px;
+}
+
+.error-card-body h4:first-child {
+  margin-top: 16px;
+}
+
+/* ---------- Mobile ---------- */
+@media (max-width: 860px) {
+  .nav-links {
+    gap: 2px;
+  }
+  .nav-links a {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+  .docs {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 24px 0 64px;
+  }
+  .docs-aside {
+    position: static;
+    max-height: none;
+  }
+  .docs-aside-toggle {
+    display: flex;
+  }
+  .docs-aside-body {
+    max-height: 0;
+    overflow: hidden;
+  }
+  .docs-aside-body.open {
+    max-height: 2000px;
+    padding-bottom: 12px;
+  }
+  .hero {
+    padding: 56px 0 40px;
+  }
+  .hero h1 {
+    font-size: clamp(2rem, 9vw, 2.6rem);
+  }
+  .hero p {
+    font-size: 1.02rem;
+    padding: 0 4px;
+  }
+  .section {
+    padding: 48px 0;
+  }
+  .section-head h2 {
+    font-size: 1.6rem;
+  }
+  .why-grid > div {
+    border-right: none;
+  }
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .next-grid {
+    grid-template-columns: 1fr;
+  }
+  .demo {
+    margin-left: 16px;
+    margin-right: 16px;
+  }
+  .demo-body {
+    font-size: 0.78rem;
+    padding: 14px;
+  }
+  table {
+    font-size: 0.85rem;
+  }
+  th, td {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 16px;
+  }
+  .hero-cta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .hero-cta .btn {
+    justify-content: center;
+  }
+  .badges {
+    gap: 6px;
+  }
+  .live-badge {
+    font-size: 0.74rem;
+    padding: 6px 9px;
+  }
 }
