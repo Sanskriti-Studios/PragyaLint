@@ -1,11 +1,18 @@
 name: release
 
-# Builds and publishes PragyaLint to PyPI and creates a GitHub Release
-# when a commit message contains the trigger word `release:`
-# (e.g. "release: v0.1.0").
+# Builds and publishes PragyaLint when the pushed commit message contains the
+# trigger word `release:` (e.g. "release: v0.1.0"). This single workflow:
 #
-# The test job always runs on push. The publish job only runs when the
-# head commit message contains `release:`.
+#   1. runs the test suite
+#   2. builds the PyPI wheel + sdist
+#   3. builds standalone executables on Windows (EXE), Linux, and macOS
+#      via PyInstaller (native runners, so each is a real native binary)
+#   4. publishes the wheel to PyPI
+#   5. creates a GitHub Release `v<version>` and attaches all artifacts
+#
+# The workflow also runs on a manual trigger (with an optional force flag) and
+# on pre-created GitHub releases, so binaries can be attached to tag-based
+# releases without a `release:` commit.
 #
 # Secrets needed:
 #   - PyPI Trusted Publishing (recommended): no secret; just configure the
@@ -15,6 +22,8 @@ name: release
 on:
   push:
     branches: [main]
+  release:
+    types: [published]
   # Manual trigger: check "Publish to PyPI even without release: commit".
   workflow_dispatch:
     inputs:
@@ -25,7 +34,7 @@ on:
         default: false
 
 permissions:
-  contents: write    # for GitHub Release creation
+  contents: write    # for GitHub Release creation + asset upload
   id-token: write    # for PyPI trusted publishing
 
 jobs:
@@ -57,7 +66,64 @@ jobs:
           name: dist
           path: dist/
 
+  # Standalone executables, built on native runners so each binary is
+  # architecture/OS-native. Runs only when this is a release build.
+  binaries:
+    name: binary (${{ matrix.os }})
+    needs: [test]
+    runs-on: ${{ matrix.os }}
+    if: |
+      contains(github.event.head_commit.message, 'release:') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.force-release == 'true') ||
+      github.event_name == 'release'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install PyInstaller
+        run: pip install pyinstaller
+
+      - name: Build one-file binary
+        run: pyinstaller --clean --noconfirm --onefile --name pragyalint pragyalint/cli.py
+
+      - name: Name, smoke-test, and stage binary
+        id: name
+        shell: bash
+        run: |
+          case "${{ matrix.os }}" in
+            windows*) tag=windows ;;
+            ubuntu*)  tag=linux ;;
+            macos*)   tag=macos ;;
+          esac
+          arch="$(python -c 'import platform; print(platform.machine().lower())')"
+          ext=""; [ "$tag" = "windows" ] && ext=".exe"
+          name="pragyalint-${tag}-${arch}${ext}"
+
+          chmod +x "dist/pragyalint$ext"
+          cp "dist/pragyalint$ext" "${{ runner.temp }}/$name"
+          "${{ runner.temp }}/$name" --version
+          "${{ runner.temp }}/$name" --help > /dev/null
+
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.name.outputs.name }}
+          path: ${{ runner.temp }}/${{ steps.name.outputs.name }}
+          if-no-files-found: error
+
   publish:
+    name: publish to PyPI
     needs: [build]
     runs-on: ubuntu-latest
     if: |
@@ -76,19 +142,27 @@ jobs:
           password: ${{ secrets.PYPI_TOKEN }}
 
   github_release:
-    needs: [publish]
+    name: create release + attach assets
+    needs: [build, publish, binaries]
     runs-on: ubuntu-latest
-    if: needs.publish.result == 'success'
+    if: needs.publish.result == 'success' || needs.binaries.result == 'success'
     steps:
       - uses: actions/download-artifact@v4
         with:
           name: dist
           path: dist/
-      - name: Create GitHub Release and attach Python artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          path: binaries/
+          pattern: pragyalint-*
+          merge-multiple: true
+      - name: Attach assets to release
         uses: softprops/action-gh-release@v2
         with:
           name: PragyaLint v${{ needs.build.outputs.version }}
           tag_name: v${{ needs.build.outputs.version }}
           draft: false
           generate_release_notes: true
-          files: dist/*
+          files: |
+            dist/*
+            binaries/*
