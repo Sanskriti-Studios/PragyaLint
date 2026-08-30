@@ -47,7 +47,9 @@
 <pre><code>git clone https://github.com/Sanskriti-Studios/PragyaLint
 cd PragyaLint
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate               # Linux/macOS
+.venv\Scripts\activate                  # Windows (cmd)
+.venv\Scripts\Activate.ps1              # Windows (PowerShell)
 pip install -e ".[dev]"
 pytest -q</code></pre>
         <p>Requires Python 3.11 or newer. The <code>dev</code> extra is just pytest — the package itself stays zero-dependency.</p>

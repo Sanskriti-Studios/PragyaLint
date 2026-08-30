@@ -484,7 +484,8 @@ write(f"{D}/cli-commands.html", "CLI commands", "The full pragyalint flag refere
 <pre><code>pragyalint                # analyze the current directory
 pragyalint --help         # full option list
 pragyalint --version      # print version
-python3 -m pragyalint     # run as a module (works even when not on PATH)</code></pre>
+python3 -m pragyalint     # run as a module (works even when not on PATH)
+py -m pragyalint          # Windows (py launcher)</code></pre>
 
         <h2 id="analysis">Analysis options</h2>
         <div class="table-wrap">
@@ -1059,7 +1060,7 @@ write(f"{D}/vscode.html", "VS Code extension", "PragyaLint for Visual Studio Cod
           <li>
             <strong>ENOENT / "cannot find pragyalint"</strong> — the CLI isn't on
             the environment's <code>PATH</code>. Find it with
-            <code>which pragyalint</code> and set <code>pragyalint.binaryPath</code>.
+            <code>which pragyalint</code> (Windows: <code>where pragyalint</code>) and set <code>pragyalint.binaryPath</code>.
           </li>
           <li>
             <strong>Wrong interpreter</strong> — install the CLI into the same
@@ -1194,7 +1195,9 @@ write(f"{D}/contributing.html", "Contributing", "Dev setup, running tests, and o
 <pre><code>git clone https://github.com/Sanskriti-Studios/PragyaLint
 cd PragyaLint
 python -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate               # Linux/macOS
+.venv\\Scripts\\activate                # Windows (cmd)
+.venv\\Scripts\\Activate.ps1            # Windows (PowerShell)
 pip install -e ".[dev]"
 pytest -q</code></pre>
         <p>Requires Python 3.11 or newer. The <code>dev</code> extra is just pytest — the package itself stays zero-dependency.</p>
