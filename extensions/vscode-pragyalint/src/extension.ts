@@ -41,6 +41,9 @@ function resolveBinary(configured: string): string[] {
     `${home}/.local/share/pipx/venvs/pragyalint/bin/pragyalint`,
     `${home}/.local/bin/pragyalint.exe`,
     `${home}/.local/share/pipx/venvs/pragyalint/Scripts/pragyalint.exe`,
+    `${home}/.local/pipx/venvs/pragyalint/Scripts/pragyalint.exe`,
+    `${home}/AppData/Roaming/Python/Scripts/pragyalint.exe`,
+    `${home}/AppData/Local/pipx/venvs/pragyalint/Scripts/pragyalint.exe`,
   ];
 
   for (const c of candidates) {
