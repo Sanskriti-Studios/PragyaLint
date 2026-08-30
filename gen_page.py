@@ -19,6 +19,8 @@ Usage (see write_pages.py):
 import datetime
 import html
 import json
+import os
+import re
 
 SITE_NAME = "PragyaLint"
 SITE_BASE = "https://prgl.ic3cool.int.yt"
@@ -132,6 +134,8 @@ def _page_url(path):
         rel = rel[: -len(".html")]
     if rel == "index":
         return "/"
+    if rel == "docs/index":
+        return "/docs/"
     return "/" + rel + ".html" if rel else "/"
 
 
@@ -153,27 +157,112 @@ def write(path, title, description, body):
     print("wrote", path)
 
 
+def _seo_block(title, description, canonical):
+    """The shared SEO head block (canonical, robots, Open Graph, Twitter,
+    JSON-LD), used for pages written outside of this generator."""
+    return (
+        "    <link rel=\"canonical\" href=\"" + canonical + "\" />\n"
+        "    <meta name=\"robots\" content=\"index, follow, max-image-preview:large, max-snippet:-1\" />\n"
+        "    <meta name=\"theme-color\" content=\"#0d0b1e\" />\n"
+        "\n"
+        "    <!-- Open Graph -->\n"
+        "    <meta property=\"og:site_name\" content=\"" + SITE_NAME + "\" />\n"
+        "    <meta property=\"og:type\" content=\"website\" />\n"
+        "    <meta property=\"og:locale\" content=\"en_US\" />\n"
+        "    <meta property=\"og:title\" content=\"" + html.escape(title) + "\" />\n"
+        "    <meta property=\"og:description\" content=\"" + html.escape(description) + "\" />\n"
+        "    <meta property=\"og:url\" content=\"" + canonical + "\" />\n"
+        "    <meta property=\"og:image\" content=\"" + OG_IMAGE + "\" />\n"
+        "    <meta property=\"og:image:width\" content=\"1200\" />\n"
+        "    <meta property=\"og:image:height\" content=\"630\" />\n"
+        "    <meta property=\"og:image:alt\" content=\"PragyaLint — dead-code analyzer for Python\" />\n"
+        "\n"
+        "    <!-- Twitter -->\n"
+        "    <meta name=\"twitter:card\" content=\"summary_large_image\" />\n"
+        "    <meta name=\"twitter:title\" content=\"" + html.escape(title) + "\" />\n"
+        "    <meta name=\"twitter:description\" content=\"" + html.escape(description) + "\" />\n"
+        "    <meta name=\"twitter:image\" content=\"" + OG_IMAGE + "\" />\n"
+        "\n"
+        "    <!-- Structured data -->\n"
+        "    <script type=\"application/ld+json\">\n"
+        + _jsonld(
+            title.replace(" — PragyaLint Docs", ""),
+            description,
+            canonical,
+        )
+        + "\n    </script>\n\n"
+    )
+
+
+def write_seo():
+    """Normalize hand-written pages (not produced by write()) so every page
+    in the site carries the same SEO head: canonical URL, robots meta, Open
+    Graph, Twitter cards, and JSON-LD. Uses each page's existing <title> and
+    description meta. Safe to run repeatedly — pages that already have a
+    canonical link are left untouched."""
+    targets = []
+    for dirpath, dirnames, filenames in os.walk("site"):
+        dirnames[:] = [d for d in dirnames if d not in ("css", "js")]
+        for f in sorted(filenames):
+            if f.endswith(".html"):
+                targets.append(os.path.join(dirpath, f))
+    for path in sorted(targets):
+        text = open(path, encoding="utf-8").read()
+        if 'rel="canonical"' in text:
+            continue
+        title_m = re.search(r"<title>(.*?)</title>", text, re.S)
+        desc_m = re.search(r'name="description"\s+content="([^"]*)"', text)
+        title_full = title_m.group(1).strip() if title_m else "PragyaLint"
+        description = (
+            desc_m.group(1)
+            if desc_m
+            else "PragyaLint — dead-code analyzer for Python."
+        )
+        canonical = SITE_BASE + _page_url(path)
+        block = _seo_block(title_full, description, canonical)
+        text = text.replace("</head>", block + "  </head>")
+        with open(path, "w", encoding="utf-8") as fh:
+            fh.write(text)
+        print("seo", path)
+
+
 def write_sitemap():
+    """Enumerate every .html file under site/ and emit sitemap.xml. Scanning
+    the filesystem (rather than only this generator's own writes) keeps the
+    sitemap complete when pages are added by hand."""
     lastmod = datetime.date.today().isoformat()
-    entries = [{"url": "/", "title": "Home", "freq": "weekly", "priority": "1.0"}]
-    entries += [
-        {"url": p["url"], "title": p["title"], "freq": "monthly", "priority": "0.8"}
-        for p in PAGES
-    ]
+    seen = set()
     urls = []
-    for e in entries:
-        urls.append(
+    for dirpath, dirnames, filenames in os.walk("site"):
+        dirnames[:] = [d for d in dirnames if d not in ("css", "js")]
+        for f in sorted(filenames):
+            if not f.endswith(".html"):
+                continue
+            path = os.path.join(dirpath, f)
+            rel = os.path.relpath(path, "site").replace(os.sep, "/")
+            if rel == "index.html":
+                continue
+            url = _page_url("site/" + rel)
+            if url not in seen:
+                seen.add(url)
+                urls.append(url)
+    if "/" not in seen:
+        urls.insert(0, "/")
+    entries = []
+    for url in urls:
+        priority = "1.0" if url == "/" else ("0.9" if url == "/docs/" else "0.8")
+        entries.append(
             "  <url>"
-            f"<loc>{SITE_BASE}{e['url']}</loc>"
+            f"<loc>{SITE_BASE}{url}</loc>"
             f"<lastmod>{lastmod}</lastmod>"
-            f"<changefreq>{e['freq']}</changefreq>"
-            f"<priority>{e['priority']}</priority>"
+            f"<changefreq>weekly</changefreq>"
+            f"<priority>{priority}</priority>"
             "</url>"
         )
     xml = (
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        + "\n".join(urls)
+        + "\n".join(entries)
         + "\n</urlset>\n"
     )
     with open("site/sitemap.xml", "w", encoding="utf-8") as fh:

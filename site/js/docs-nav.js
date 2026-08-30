@@ -39,6 +39,7 @@
         { href: "docs/integrations.html", label: "Overview", icon: "fa-solid fa-plug", desc: "Editors, CI, and pre-commit at a glance." },
         { href: "docs/automation.html", label: "CI / automation", icon: "fa-solid fa-robot", desc: "GitHub Actions, GitLab CI, pre-commit hooks." },
         { href: "docs/plugins.html", label: "Plugins", icon: "fa-solid fa-puzzle-piece", desc: "Custom finders and reporter hooks." },
+        { href: "docs/external.html", label: "External packages", icon: "fa-solid fa-box-open", desc: "sympy, PyQt5/Qt, Django — how third-party code is treated." },
         { href: "docs/vscode.html", label: "VS Code extension", icon: "fa-solid fa-code", desc: "Inline diagnostics as you type." },
       ],
     },

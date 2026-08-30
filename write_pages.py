@@ -1,6 +1,6 @@
 import sys
 sys.path.insert(0, ".")
-from gen_page import write, write_robots, write_sitemap
+from gen_page import write, write_robots, write_seo, write_sitemap
 
 D = "site/docs"
 
@@ -996,6 +996,109 @@ for finding in report.findings:
         </p>
 ''')
 
+# ---------------------------------------------------------- external.html
+write(f"{D}/external.html", "External packages & frameworks", "How PragyaLint treats third-party packages (sympy, PyQt5/Qt, Django, numpy): opaque-leaf resolution, no installation needed, and framework entry points.", '''
+        <h1>External packages &amp; frameworks</h1>
+        <p class="lead">
+          PragyaLint analyzes <em>your</em> code — the files under the root you
+          point it at. The third-party packages you import (sympy, PyQt5,
+          Django, numpy, …) are treated as opaque leaves in the module graph:
+          never scanned, never imported, and never flagged. Here's exactly how
+          that works and what it means for real projects.
+        </p>
+
+        <h2 id="leaves">External packages are opaque leaves</h2>
+        <p>
+          Discovery walks only the target directory and skips
+          <code>site-packages</code>, <code>.venv</code>, <code>venv</code>,
+          <code>node_modules</code>, and <code>__pycache__</code>. So
+          <code>site-packages/sympy/…</code> is never traversed, parsed, or
+          reported on. When a file says
+        </p>
+<pre><code>import sympy
+from PyQt5 import QtCore, QtWidgets</code></pre>
+        <p>
+          the resolver can't find <code>sympy</code> or <code>PyQt5</code>
+          under your root, so it records them as external dependency edges —
+          real import usage that keeps the importing file reachable, without
+          following the package's internals.
+        </p>
+
+        <h2 id="no-install">Nothing is imported or executed</h2>
+        <p>
+          The whole analysis is built on the stdlib <code>ast</code> module.
+          PragyaLint never calls <code>import</code> on your modules, never
+          spawns your <code>__init__.py</code> side effects, and never touches
+          a virtualenv. The practical upshot:
+        </p>
+        <ul>
+          <li>A scan succeeds even if <strong>none</strong> of your
+              third-party dependencies are installed — no <code>pip install</code>
+              required for an accurate analysis.</li>
+          <li>Package-level effects (Django app registry, Qt event loops,
+              numpy import time) can't crash or corrupt the analysis.</li>
+        </ul>
+
+        <h2 id="entry">Framework entry points</h2>
+        <p>
+          Whatever framework you use, the entry files work the same way — see
+          <a href="entry-files.html">Entry files</a> for the full rules. The
+          conventional entries cover the common GUI/CLI shapes automatically:
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Framework</th><th>Usual entry</th><th>Handled by</th></tr></thead>
+            <tbody>
+              <tr><td>PyQt/PySide, Tkinter, wxPython</td><td><code>main.py</code> / <code>app.py</code></td><td>conventional entry</td></tr>
+              <tr><td>Django</td><td><code>manage.py</code></td><td>pass via <code>--entry</code></td></tr>
+              <tr><td>Flask / FastAPI</td><td><code>app.py</code></td><td>conventional entry</td></tr>
+              <tr><td>Click / Typer CLI</td><td><code>cli.py</code></td><td>conventional entry</td></tr>
+              <tr><td>pytest</td><td><code>test_*.py</code>, <code>conftest.py</code></td><td>test-discovery entry</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          For anything else, point at an explicit entry:
+        </p>
+<pre><code>pragyalint -r . --entry manage.py --entry bot.py</code></pre>
+
+        <h2 id="rules">What still gets flagged</h2>
+        <p>
+          Being external doesn't exempt a file from the normal rules:
+        </p>
+        <ul>
+          <li>An <strong>import that's genuinely unused</strong> in a reachable
+              file is still a finding — <code>import numpy</code> you never use
+              in that module is dead regardless of numpy being third-party.</li>
+          <li>Your own modules that nothing reaches are still
+              <code>unused_file</code> HIGH findings — the graph treats your
+              code and the vendor's code differently for a reason.</li>
+        </ul>
+
+        <h2 id="dynamic">Framework magic &amp; dynamic dispatch</h2>
+        <p>
+          ORMs, declarative widgets, and plugin frameworks call names
+          reflectively (Django model fields, Qt meta-objects, decorator
+          registration). PragyaLint recognizes dispatch tables,
+          <code>getattr()</code>, and decorator references as real usage — see
+          <a href="dynamic-dispatch.html">Dynamic dispatch</a>. When it detects
+          a pattern it <em>can't</em> resolve (computed
+          <code>getattr</code> names, <code>exec</code>), it downgrades the
+          remaining findings project-wide to LOW confidence and refuses to
+          auto-delete without <code>--force</code>, so framework magic can't
+          silently lose a symbol that's actually alive.
+        </p>
+
+        <h2 id="extends">Go further with plugins</h2>
+        <p>
+          If a framework has conventions worth a dedicated rule, write a custom
+          finder via the <a href="plugins.html">Plugins</a> API — it gets the
+          same module graph and <code>ast</code> trees, so it can reason about
+          your framework exactly like the built-in rules reason about plain
+          modules.
+        </p>
+''')
+
 # ----------------------------------------------------------------- vscode.html
 write(f"{D}/vscode.html", "VS Code extension", "PragyaLint for Visual Studio Code: commands, settings, and inline dead-code diagnostics.", '''
         <h1>VS Code extension</h1>
@@ -1338,6 +1441,7 @@ write(f"{D}/source.html", "Source & releases", "Repository layout, releases, and
         </p>
 ''')
 
+write_seo()
 write_sitemap()
 write_robots()
 print("all batches done")
