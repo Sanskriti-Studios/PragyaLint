@@ -64,12 +64,7 @@ jobs:
       - name: Determine release tag
         id: version
         run: |
-          python3 - <<'PY'
-          import tomllib
-          with open("../../pyproject.toml", "rb") as fh:
-              version = tomllib.load(fh)["project"]["version"]
-          print(f"tag=v{version}")
-          PY
+          echo "tag=v$(python3 -c 'import tomllib; print(tomllib.load(open("../../pyproject.toml", "rb"))["project"]["version"])')" >> "$GITHUB_OUTPUT"
 
       - name: Check for VSCE_PAT
         id: check-pat
