@@ -213,7 +213,7 @@ That gives you:
 ```bash
 git clone https://github.com/example/pragyalint
 cd pragyalint
-python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 pytest
 ```
