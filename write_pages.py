@@ -1240,8 +1240,8 @@ pytest -k "exports or dynamic"    # by keyword</code></pre>
             <tbody>
               <tr><td><code>tests.yml</code></td><td>pytest on Python 3.11/3.12/3.13 plus the self-analysis gate, on push and PR.</td></tr>
               <tr><td><code>pages.yml</code></td><td>Deploys <code>site/</code> to GitHub Pages on push to main.</td></tr>
-              <tr><td><code>publish.yml</code></td><td>Builds and publishes to PyPI and GitHub Releases; triggers on a <code>release:</code> commit.</td></tr>
-              <tr><td><code>bins.yml</code></td><td>Builds standalone Windows/Linux/macOS binaries with PyInstaller and attaches them to releases.</td></tr>
+              <tr><td><code>publish.yml</code></td><td>The release workflow — on a <code>release:</code> commit it builds the PyPI wheel/sdist, PyInstaller binaries for Windows/Linux/macOS, and creates the GitHub Release with every asset attached.</td></tr>
+              <tr><td><code>vsix.yml</code></td><td>Builds the VS Code extension (<code>.vsix</code>) and attaches it to the release too; publishes to the Marketplace when a <code>VSCE_PAT</code> secret is set.</td></tr>
             </tbody>
           </table>
         </div>
