@@ -246,7 +246,7 @@ def _fix_unused_exports(
 # --------------------------------------------------------------------------- #
 def _read_lines(path: str) -> Optional[List[str]]:
     try:
-        with open(path, "r", encoding="utf-8") as fh:
+        with open(path, "r", encoding="utf-8", newline="") as fh:
             return fh.read().splitlines(keepends=True)
     except (OSError, UnicodeDecodeError):
         return None
@@ -254,7 +254,7 @@ def _read_lines(path: str) -> Optional[List[str]]:
 
 def _write_lines(path: str, lines: List[str]) -> bool:
     try:
-        with open(path, "w", encoding="utf-8") as fh:
+        with open(path, "w", encoding="utf-8", newline="") as fh:
             fh.write("".join(lines))
         return True
     except OSError:
@@ -391,7 +391,9 @@ def _apply_import_edits(
     for lineno, new_text in rewrites.items():
         idx = lineno - 1
         if 0 <= idx < len(out):
-            out[idx] = new_text + "\n"
+            old = out[idx]
+            eol = "\r\n" if old.endswith("\r\n") else "\r" if old.endswith("\r") else "\n"
+            out[idx] = new_text + eol
 
     # apply removals bottom-up to keep indexes valid
     for start, end in sorted(removals.items(), reverse=True):

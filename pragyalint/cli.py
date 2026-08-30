@@ -247,7 +247,23 @@ def run(argv: Optional[List[str]] = None) -> int:
     return 0
 
 
+def _configure_streams() -> None:
+    """Make Unicode output safe on Windows consoles and non-UTF-8 locales."""
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is None:
+            continue
+        encoding = getattr(stream, "encoding", "") or ""
+        if "utf" in encoding.lower():
+            continue
+        try:
+            reconfigure(encoding="utf-8", errors="replace")
+        except (AttributeError, ValueError, OSError):
+            pass
+
+
 def main(argv: Optional[List[str]] = None) -> int:
+    _configure_streams()
     try:
         return run(argv)
     except KeyboardInterrupt:
