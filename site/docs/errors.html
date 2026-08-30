@@ -113,7 +113,7 @@ source ~/.bashrc</code></pre>
                 on Windows) and paste that absolute path into the tool's config.
               </li>
               <li>
-                For the <a href="vscode.html">VS Code extension</a> specifically:
+                For the <a href="docs/vscode.html">VS Code extension</a> specifically:
                 set <code>pragyalint.path</code> in your settings, or install
                 inside the same virtualenv VS Code's Python interpreter is using.
               </li>
@@ -121,7 +121,7 @@ source ~/.bashrc</code></pre>
                 For pre-commit: use the <code>language: python</code> hook form
                 so pre-commit manages its own isolated install rather than
                 shelling out to a system PATH lookup — see
-                <a href="automation.html">CI / automation</a>.
+                <a href="docs/automation.html">CI / automation</a>.
               </li>
             </ul>
           </div>
@@ -226,10 +226,10 @@ python3 -m pip show pragyalint   # run with the SAME python3</code></pre>
             <p>
               PragyaLint reads config from <code>[tool.pragyalint]</code> in
               <code>pyproject.toml</code>, <em>or</em> a standalone
-              <code>.pragyalint.toml</code>/<code>pragyalint.toml</code> at the
+              <code>pragyalint.toml</code>/<code>pragyalint.json</code> at the
               project root. It doesn't merge both — the standalone file wins if
               present. See the full precedence order on the
-              <a href="config.html">Configuration</a> page.
+              <a href="docs/config.html">Configuration</a> page.
             </p>
           </div>
         </div>
@@ -255,7 +255,7 @@ python3 -m pip show pragyalint   # run with the SAME python3</code></pre>
               <code>eval</code>, or <code>globals()</code>/<code>locals()</code>
               anywhere in your project, it refuses to delete definitions
               project-wide unless you pass <code>--force</code>. This is
-              intentional — see <a href="dynamic-dispatch.html">Dynamic dispatch</a>.
+              intentional — see <a href="docs/dynamic-dispatch.html">Dynamic dispatch</a>.
             </p>
             <h4>3. Entry files and <code>__all__</code></h4>
             <p>
@@ -294,10 +294,7 @@ cat pragyalint-debug.log</code></pre>
           with the log, your OS, and <code>python3 --version</code>.
         </p>
 
-        <div class="next-steps" id="docs-next" data-pages="faq.html,cli-commands.html,config.html,dynamic-dispatch.html,contributing.html">
-          <h2>Next steps</h2>
-          <div class="next-grid"></div>
-        </div>
+        <div class="docs-pager" id="docs-pager"></div>
       </div>
     </div>
 

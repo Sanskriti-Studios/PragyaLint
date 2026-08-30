@@ -1,11 +1,16 @@
-/* Injects the docs sidebar navigation (grouped, collapsible on mobile) and,
- * when a page has <div id="docs-next"></div>, a grid of big button cards
- * linking to a curated set of "next step" pages instead of plain text links.
- * Both read from the single PRAGYALINT_DOCS_NAV source in docs-nav.js. */
+/* Injects the docs sidebar navigation (grouped, collapsible on mobile) and
+ * a Previous/Next pager at the bottom of each page, based on that page's
+ * position in the flattened PRAGYALINT_DOCS_NAV order. No per-page config
+ * needed -- the pager just follows the sidebar. */
 (function () {
   "use strict";
 
   var SECTIONS = window.PRAGYALINT_DOCS_NAV || [];
+  var FLAT = [];
+  SECTIONS.forEach(function (sec) {
+    sec.items.forEach(function (item) { FLAT.push(item); });
+  });
+
   var p = location.pathname;
 
   function isActive(href) {
@@ -50,37 +55,38 @@
     }
   }
 
-  function renderNextSteps() {
-    var target = document.getElementById("docs-next");
+  function renderPager() {
+    var target = document.getElementById("docs-pager");
     if (!target) return;
-    var grid = target.querySelector(".next-grid");
-    if (!grid) return;
-    var keys = (target.getAttribute("data-pages") || "")
-      .split(",")
-      .map(function (s) { return s.trim(); })
-      .filter(Boolean);
-    if (!keys.length) return;
 
-    var all = [];
-    SECTIONS.forEach(function (sec) {
-      sec.items.forEach(function (item) { all.push(item); });
-    });
+    var idx = -1;
+    for (var i = 0; i < FLAT.length; i++) {
+      if (isActive(FLAT[i].href)) { idx = i; break; }
+    }
+    if (idx === -1) return;
 
-    var html = "";
-    keys.forEach(function (key) {
-      var item = all.filter(function (i) { return i.href === "docs/" + key; })[0];
-      if (!item) return;
-      html +=
-        '<a class="next-btn" href="' + item.href.replace(/^docs\//, "") + '">' +
-        '<i class="' + item.icon + '"></i>' +
-        '<span class="next-btn-label">' + item.label + "</span>" +
-        '<span class="next-btn-desc">' + item.desc + "</span>" +
-        '<i class="fa-solid fa-arrow-right next-btn-arrow"></i>' +
-        "</a>";
-    });
-    grid.innerHTML = html;
+    var prev = idx > 0 ? FLAT[idx - 1] : null;
+    var next = idx < FLAT.length - 1 ? FLAT[idx + 1] : null;
+
+    function side(item, dir) {
+      if (!item) return '<span class="pager-btn pager-btn-empty"></span>';
+      var arrow = dir === "prev"
+        ? '<i class="fa-solid fa-arrow-left pager-arrow"></i>'
+        : '<i class="fa-solid fa-arrow-right pager-arrow"></i>';
+      var label = dir === "prev" ? "Previous" : "Next";
+      var textBlock =
+        '<span class="pager-text"><span class="pager-label">' + label + '</span>' +
+        '<span class="pager-title">' + item.label + "</span></span>";
+      return (
+        '<a class="pager-btn pager-btn-' + dir + '" href="' + item.href + '">' +
+        (dir === "prev" ? arrow + textBlock : textBlock + arrow) +
+        "</a>"
+      );
+    }
+
+    target.innerHTML = side(prev, "prev") + side(next, "next");
   }
 
   renderAside();
-  renderNextSteps();
+  renderPager();
 })();

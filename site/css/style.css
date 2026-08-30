@@ -987,33 +987,21 @@ pre code {
   font-weight: 600;
 }
 
-/* ---------- "Next steps" big button grid (replaces plain link lists) ---------- */
-.next-steps {
+/* ---------- Docs pager (Previous / Next) ---------- */
+.docs-pager {
   margin-top: 48px;
-  padding-top: 32px;
+  padding-top: 24px;
   border-top: 1px solid var(--border);
-}
-
-.next-steps h2 {
-  font-size: 1.3rem;
-  margin: 0 0 18px;
-  border-top: none !important;
-  padding-top: 0 !important;
-}
-
-.next-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.next-btn {
-  display: grid;
-  grid-template-columns: 40px 1fr auto;
-  grid-template-rows: auto auto;
+.pager-btn {
+  display: flex;
   align-items: center;
-  column-gap: 14px;
-  padding: 18px;
+  gap: 12px;
+  padding: 14px 18px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--bg-elevated);
@@ -1021,46 +1009,71 @@ pre code {
   transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
 }
 
-.next-btn:hover {
+.pager-btn:hover {
   text-decoration: none;
   border-color: var(--accent);
   transform: translateY(-2px);
   box-shadow: var(--shadow);
 }
 
-.next-btn i:first-child {
-  grid-row: 1 / 3;
-  font-size: 1.3rem;
-  color: var(--accent);
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  background: var(--accent-soft);
-  border-radius: var(--radius);
+.pager-btn-empty {
+  border: none;
+  background: none;
+  pointer-events: none;
 }
 
-.next-btn-label {
+.pager-btn-next {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.pager-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pager-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-muted);
+}
+
+.pager-title {
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.98rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.next-btn-desc {
-  grid-column: 2;
+.pager-arrow {
   color: var(--fg-muted);
-  font-size: 0.82rem;
-  line-height: 1.4;
-}
-
-.next-btn-arrow {
-  grid-row: 1 / 3;
-  color: var(--fg-muted);
+  flex-shrink: 0;
   transition: transform 0.15s, color 0.15s;
 }
 
-.next-btn:hover .next-btn-arrow {
+.pager-btn-prev:hover .pager-arrow {
+  transform: translateX(-3px);
+  color: var(--accent);
+}
+
+.pager-btn-next:hover .pager-arrow {
   transform: translateX(3px);
   color: var(--accent);
+}
+
+@media (max-width: 560px) {
+  .docs-pager {
+    grid-template-columns: 1fr;
+  }
+  .pager-btn-next {
+    justify-content: flex-start;
+    text-align: left;
+    flex-direction: row-reverse;
+  }
 }
 
 /* ---------- Colored terminal flags / tokens inside <pre> demos ---------- */

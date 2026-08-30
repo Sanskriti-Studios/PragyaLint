@@ -27,7 +27,7 @@
       label: "Using it",
       items: [
         { href: "docs/cli-commands.html", label: "CLI commands", icon: "fa-solid fa-terminal", desc: "Every flag: --fix, --dry-run, --confidence, --force, --json." },
-        { href: "docs/config.html", label: "Configuration", icon: "fa-solid fa-sliders", desc: "pyproject.toml, .pragyalint.toml, and precedence." },
+        { href: "docs/config.html", label: "Configuration", icon: "fa-solid fa-sliders", desc: "pyproject.toml, pragyalint.toml, and precedence." },
         { href: "docs/fixes.html", label: "Fixes & --fix", icon: "fa-solid fa-wrench", desc: "What each fix target does, and how to preview safely." },
         { href: "docs/reports.html", label: "Reports", icon: "fa-solid fa-file-lines", desc: "Terminal, JSON, and SARIF output formats." },
         { href: "docs/cache.html", label: "Cache", icon: "fa-solid fa-database", desc: "How re-scans get faster, and how to bust the cache." },

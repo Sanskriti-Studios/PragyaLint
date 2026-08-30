@@ -9,10 +9,19 @@
   var PYPI_PKG = "pragyalint";
 
   function timeAgo(iso) {
-    var diffMs = Date.now() - new Date(iso).getTime();
-    var days = Math.floor(diffMs / 86400000);
+    // Compare calendar days in the *viewer's local timezone*, not raw
+    // elapsed milliseconds. A push at 11pm yesterday and a viewer checking
+    // at 9am today is only ~10 real hours apart, but should say
+    // "yesterday", not "today" -- floor(ms / 86400000) gets that wrong
+    // right at day boundaries, which is exactly the kind of off-by-one
+    // that looks broken to anyone checking against their own clock.
+    var then = new Date(iso);
+    var now = new Date();
+    var startOfThen = new Date(then.getFullYear(), then.getMonth(), then.getDate());
+    var startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var days = Math.round((startOfNow - startOfThen) / 86400000);
     if (days <= 0) return "today";
-    if (days === 1) return "1 day ago";
+    if (days === 1) return "yesterday";
     if (days < 30) return days + " days ago";
     var months = Math.floor(days / 30);
     if (months < 12) return months + (months === 1 ? " month ago" : " months ago");
