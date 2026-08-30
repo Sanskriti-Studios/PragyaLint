@@ -24,8 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   binary install instructions.
 - Release pipeline: a `release:` commit now always produces a GitHub Release
   with the PyPI wheel, Windows/Linux/macOS binaries, and the VSIX attached.
-  A separate workflow builds the VSIX and can publish it to the Marketplace
-  when a `VSCE_PAT` secret is configured.
+  A separate workflow builds and attaches the VSIX package.
 
 ### Changed
 

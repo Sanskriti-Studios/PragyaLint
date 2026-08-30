@@ -8,12 +8,11 @@ name: vsix
 #
 # The `.vsix` is attached to the GitHub Release created by the `release`
 # workflow (publish.yml), so every release ships the wheel + sdist, the
-# standalone binaries (Windows/Linux/macOS), AND the VSIX.
+# standalone binaries (Windows/Linux/macOS), AND the VSIX package.
 #
-# Marketplace publishing is attempted only when a `VSCE_PAT` secret exists —
-# an Azure DevOps PAT with "Marketplace > Manage" scope from the publisher's
-# account. If the secret is absent (or the extension isn't registered yet),
-# that step is skipped silently and the VSIX is still built and attached.
+# Publishing to the VS Code Marketplace is done manually from the built
+# `.vsix` (e.g. `vsce publish -i` with the owner's Marketplace PAT), so this
+# workflow only builds and attaches the package.
 
 on:
   push:
@@ -65,23 +64,6 @@ jobs:
         id: version
         run: |
           echo "tag=v$(python3 -c 'import tomllib; print(tomllib.load(open("../../pyproject.toml", "rb"))["project"]["version"])')" >> "$GITHUB_OUTPUT"
-
-      - name: Check for VSCE_PAT
-        id: check-pat
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: |
-          if [ -n "$VSCE_PAT" ]; then
-            echo "publish=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "publish=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Publish to VS Code Marketplace
-        if: steps.check-pat.outputs.publish == 'true'
-        env:
-          VSCE_PAT: ${{ secrets.VSCE_PAT }}
-        run: npx vsce publish --no-git-tag-version -p "$VSCE_PAT"
 
       - name: Attach VSIX to release
         uses: softprops/action-gh-release@v2

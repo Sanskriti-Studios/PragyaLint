@@ -1241,7 +1241,7 @@ pytest -k "exports or dynamic"    # by keyword</code></pre>
               <tr><td><code>tests.yml</code></td><td>pytest on Python 3.11/3.12/3.13 plus the self-analysis gate, on push and PR.</td></tr>
               <tr><td><code>pages.yml</code></td><td>Deploys <code>site/</code> to GitHub Pages on push to main.</td></tr>
               <tr><td><code>publish.yml</code></td><td>The release workflow — on a <code>release:</code> commit it builds the PyPI wheel/sdist, PyInstaller binaries for Windows/Linux/macOS, and creates the GitHub Release with every asset attached.</td></tr>
-              <tr><td><code>vsix.yml</code></td><td>Builds the VS Code extension (<code>.vsix</code>) and attaches it to the release too; publishes to the Marketplace when a <code>VSCE_PAT</code> secret is set.</td></tr>
+              <tr><td><code>vsix.yml</code></td><td>Builds the VS Code extension (<code>.vsix</code>) and attaches it to the release too; Marketplace publishing is done manually from the release's <code>.vsix</code>.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1316,9 +1316,8 @@ write(f"{D}/source.html", "Source & releases", "Repository layout, releases, and
           PyInstaller binaries for Windows/Linux/macOS, and creates the GitHub
           Release with every asset attached. The
           <code>.github/workflows/vsix.yml</code> workflow builds and attaches
-          the VS Code extension package to the same release, and tries to
-          publish it to the VS Code Marketplace when a <code>VSCE_PAT</code>
-          secret is configured.
+          the VS Code extension package to the same release; publishing it to
+          the VS Code Marketplace is done manually from that <code>.vsix</code>.
         </p>
 
         <h2 id="versioning">Versions</h2>
